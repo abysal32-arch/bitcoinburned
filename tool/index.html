@@ -46,6 +46,41 @@
     margin:0 auto;
     padding:56px 24px 96px;
   }
+  .brand-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px 20px;
+    flex-wrap:wrap;
+    padding-bottom:18px;
+    margin-bottom:36px;
+    border-bottom:1px solid var(--line);
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    text-decoration:none; color:var(--ink);
+  }
+  .brand-mark{
+    width:30px; height:30px; border-radius:7px; flex:none;
+    background:radial-gradient(circle at 32% 26%, var(--seal-dim), var(--seal) 62%, #4A1A12 100%);
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px;
+  }
+  .brand-name{
+    font-family:var(--font-display);
+    font-weight:600; font-size:19px; letter-spacing:-0.01em;
+  }
+  .brand-name .btc{color:var(--ink);}
+  .brand-name .brn{color:var(--seal);}
+  .registry-link{
+    font-family:var(--font-mono);
+    font-size:12px; letter-spacing:0.06em;
+    color:var(--muted); text-decoration:none;
+    border-bottom:1px solid var(--line);
+    padding-bottom:1px;
+  }
+  .registry-link:hover{color:var(--seal); border-bottom-color:var(--seal);}
+
   header.hero{
     border-bottom:1px solid var(--line);
     padding-bottom:32px;
@@ -185,6 +220,13 @@
   }
   .msg-count.warn{color:var(--seal);}
 
+  .burn-warning{
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--seal);
+    margin:0 0 12px;
+  }
+
   button.build{
     font-family:var(--font-mono);
     font-size:13.5px;
@@ -255,17 +297,31 @@
     background:#F4F5F1;
     padding:22px 24px 26px;
   }
+  .fee-warning{
+    display:none;
+    font-weight:700;
+    color:var(--seal);
+    font-size:13.5px;
+    margin:0 0 14px;
+    padding:10px 12px;
+    border:1px solid var(--seal);
+    background:rgba(122,46,36,0.08);
+    border-radius:2px;
+  }
+  .fee-warning.show{display:block;}
   .cert-row{
     display:flex;
     justify-content:space-between;
     align-items:baseline;
+    flex-wrap:wrap;
+    gap:2px 16px;
     padding:9px 0;
     border-bottom:1px dashed var(--line);
     font-size:14px;
   }
   .cert-row:last-of-type{border-bottom:none;}
   .cert-row .k{color:var(--muted); font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:0.04em;}
-  .cert-row .v{font-family:var(--font-mono); font-weight:500;}
+  .cert-row .v{font-family:var(--font-mono); font-weight:500; word-break:break-all; margin-left:auto; text-align:right; min-width:0;}
   .psbt-block{
     margin-top:16px;
   }
@@ -351,7 +407,13 @@
 <body>
 <div class="wrap">
 
-  <a class="home-link" href="../" style="display:inline-block; margin-bottom:28px; font-family:var(--font-mono); font-size:12px; letter-spacing:0.08em; color:var(--muted); text-decoration:none; border-bottom:1px solid var(--line);">&larr; bitcoinburned.com</a>
+  <div class="brand-bar">
+    <a class="brand" href="../" aria-label="bitcoinburned.com — home">
+      <span class="brand-mark" aria-hidden="true">🔥</span>
+      <span class="brand-name"><span class="btc">bitcoin</span><span class="brn">burned</span></span>
+    </a>
+    <a class="registry-link" href="../#addresses">burn address registry</a>
+  </div>
 
   <header class="hero">
     <div class="eyebrow">Provable Burn · v1</div>
@@ -438,6 +500,7 @@
     </div>
   </section>
 
+  <p class="burn-warning">Burning is permanent — the bitcoin can never be recovered — but this PSBT stays inert until you sign it in your own wallet.</p>
   <button class="build" id="build-btn">Build the unsigned burn PSBT</button>
   <div class="error-box" id="error-box"></div>
 
@@ -450,6 +513,7 @@
       </div>
     </div>
     <div class="cert-body">
+      <div class="fee-warning" id="fee-warning">⚠ Fee is more than half the input value — double-check this is intentional.</div>
       <div class="cert-row"><span class="k">Burning</span><span class="v" id="out-burn">—</span></div>
       <div class="cert-row" id="out-change-row" style="display:none;"><span class="k">Change back to you</span><span class="v" id="out-change">—</span></div>
       <div class="cert-row" id="out-msg-row" style="display:none;"><span class="k">Message</span><span class="v" id="out-msg">—</span></div>
@@ -475,6 +539,7 @@
 
   <footer>
     <span>MIT licensed · fully client-side · <a href="#" id="view-source-link">view source</a></span>
+    <span>part of <a href="../">bitcoinburned.com</a></span>
     <span>No private keys ever leave your wallet software.</span>
   </footer>
 
@@ -487,13 +552,28 @@
 // minimal .from() is all that's needed. Remove once the build (task-03)
 // makes the core logic browser-native.
 if (typeof Buffer === 'undefined') {
+  // BufferLike extends Uint8Array (bitcoinjs-lib v7 accepts those everywhere)
+  // and adds the one Node method the core logic calls on the result:
+  // .toString('hex') — on a plain Uint8Array that fell back to
+  // Uint8Array.prototype.toString and rendered "106,5,115,…" in the certificate.
+  class BufferLike extends Uint8Array {
+    toString(enc) {
+      if (enc === 'hex') {
+        let s = '';
+        for (const b of this) s += b.toString(16).padStart(2, '0');
+        return s;
+      }
+      if (!enc || enc === 'utf8' || enc === 'utf-8') return new TextDecoder().decode(this);
+      throw new Error('Buffer shim: unsupported encoding ' + enc);
+    }
+  }
   window.Buffer = {
     from: function (x, enc) {
       if (typeof x === 'string') {
         if (enc && enc !== 'utf8' && enc !== 'utf-8') throw new Error('Buffer shim: unsupported encoding ' + enc);
-        return new TextEncoder().encode(x);
+        return new BufferLike(new TextEncoder().encode(x));
       }
-      return Uint8Array.from(x);
+      return BufferLike.from(x);
     }
   };
 }
@@ -530,12 +610,15 @@ PROCEED WITH CAUTION!
     $('partial-fields').classList.toggle('show', m === 'partial');
   }
 
+  const msgBytes = () => new TextEncoder().encode($('message').value).length;
+
   $('message').addEventListener('input', () => {
-    const bytes = new TextEncoder().encode($('message').value).length;
+    const bytes = msgBytes();
     const el = $('msg-count');
     el.textContent = bytes + ' bytes';
     el.classList.toggle('warn', bytes > 80);
-    if (bytes > 80) el.textContent += ' (over the classic 80-byte relay default — may need a more permissive relay policy)';
+    if (bytes > 500) el.textContent += ' — over the 500-byte limit; shorten it to build';
+    else if (bytes > 80) el.textContent += ' (over the classic 80-byte relay default — may need a more permissive relay policy)';
   });
 
   function showError(msg){
@@ -548,8 +631,66 @@ PROCEED WITH CAUTION!
     $('error-box').classList.remove('show');
   }
 
+  // Which network a bech32 prefix belongs to; null = not a prefix we support.
+  // Checked longest-prefix-first: "bcrt1" also starts with "bc".
+  function addressNetwork(addr){
+    if (addr.startsWith('bcrt1')) return 'regtest';
+    if (addr.startsWith('tb1')) return 'testnet';
+    if (addr.startsWith('bc1')) return 'mainnet';
+    return null;
+  }
+  const PREFIX = { mainnet: 'bc1', testnet: 'tb1', regtest: 'bcrt1' };
+
+  // Returns null if the raw field text is a whole number >= min, else a message.
+  function intError(raw, min, name, emptyHint){
+    if (raw === '') return name + ' is required — ' + emptyHint;
+    if (!/^\d+$/.test(raw)) return name + ' must be a whole number (digits only), at least ' + min + '.';
+    if (parseInt(raw, 10) < min) return name + ' must be at least ' + min + '.';
+    return null;
+  }
+
+  // Pre-flight validation: friendlier, field-specific messages before the
+  // library's own guards (which stay as the last line of defense).
+  function validate(){
+    const txid = $('txid').value.trim();
+    if (txid === '') return 'Transaction ID is required — 64 hex characters, from your wallet or a block explorer.';
+    if (!/^[0-9a-fA-F]{64}$/.test(txid)) return 'Transaction ID must be exactly 64 hex characters (0–9, a–f) — this one is ' + txid.length + ' characters' + (/^[0-9a-fA-F]*$/.test(txid) ? '.' : ' and contains non-hex characters.');
+
+    let err = intError($('vout').value.trim(), 0, 'Output index (vout)', 'use 0 for the first output of the transaction.');
+    if (err) return err;
+    err = intError($('value').value.trim(), 1, 'Value', 'the full amount of the UTXO, in satoshis.');
+    if (err) return err;
+
+    const network = $('network').value;
+    const addr = $('address').value.trim();
+    if (addr === '') return 'Address is required — the address the UTXO currently sits at.';
+    const addrNet = addressNetwork(addr);
+    if (addrNet === null) return 'Address must be native SegWit or Taproot bech32 (bc1…, tb1…, or bcrt1…) — legacy addresses are not supported in v1.';
+    if (addrNet !== network) return 'Address ↔ network mismatch: the address starts with "' + PREFIX[addrNet] + '" (' + addrNet + ') but the network selector says ' + network + '. Fix whichever one is wrong.';
+
+    if (mode === 'partial') {
+      err = intError($('burn-amount').value.trim(), 1, 'Amount to burn', 'how many satoshis to destroy (partial burn).');
+      if (err) return err;
+      const change = $('change-address').value.trim();
+      if (change === '') return 'Change address is required for a partial burn — where the unburned remainder goes.';
+      const changeNet = addressNetwork(change);
+      if (changeNet === null) return 'Change address must be native SegWit or Taproot bech32 (bc1…, tb1…, or bcrt1…).';
+      if (changeNet !== network) return 'Change address ↔ network mismatch: it starts with "' + PREFIX[changeNet] + '" (' + changeNet + ') but the network selector says ' + network + '.';
+    }
+
+    err = intError($('fee').value.trim(), 0, 'Network fee', 'the total fee in satoshis (not sats/vByte).');
+    if (err) return err;
+
+    const bytes = msgBytes();
+    if (bytes > 500) return 'Message is ' + bytes + ' bytes as UTF-8 — the limit is 500 bytes. Multi-byte characters (accents, emoji) count more than once; shorten the message.';
+
+    return null;
+  }
+
   $('build-btn').addEventListener('click', () => {
     clearError();
+    const problem = validate();
+    if (problem) { showError(problem); return; }
     try {
       const opts = {
         network: $('network').value,
@@ -585,6 +726,9 @@ PROCEED WITH CAUTION!
       }
       $('out-script').textContent = result.opReturnScriptHex;
       $('psbt-output').value = result.psbtBase64;
+      // Sanity nudge, not a blocker: a fee above half the input is legal but
+      // almost always a typo (sats/vByte pasted into a total-sats field).
+      $('fee-warning').classList.toggle('show', opts.fee > opts.input.value / 2);
       $('certificate').classList.add('show');
       $('certificate').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } catch (e) {
