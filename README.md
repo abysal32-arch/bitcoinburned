@@ -8,9 +8,13 @@ address nobody has a key for," which is safe in practice but technically
 rests on an assumption (that finding a matching key is computationally
 infeasible), not a proof.
 
-Two ways to use it, same underlying logic:
+This repo is the source for **bitcoinburned.com**, a static two-page
+site: `index.html` at the root is the homepage (burn-address registry +
+pitch), and `tool/index.html` is the burn tool itself.
 
-- **`index.html`** — a single, dependency-free file. Open it in any
+Two ways to use the tool, same underlying logic:
+
+- **`tool/index.html`** — a single, dependency-free file. Open it in any
   browser, nothing to install, works offline. This is the whole
   application; there is no server and no build step required to use it.
 - **`cli.js`** — a Node.js command-line version, useful for scripting or
@@ -35,10 +39,10 @@ Burning bitcoin is **irreversible**. Double-check every field — the
 txid, the amount, the fee, the message — in the signing wallet before
 you sign, not just on this page.
 
-## Using the browser app (`index.html`)
+## Using the browser app (`tool/index.html`)
 
-1. Open `index.html` directly in a browser (double-click it, or drag it
-   into a browser window). No internet connection is required except to
+1. Open `tool/index.html` directly in a browser (double-click it, or drag
+   it into a browser window). No internet connection is required except to
    load two Google Fonts; the transaction logic itself runs fully
    offline.
 2. Fill in the UTXO you want to spend from (txid, output index, value in
@@ -109,23 +113,24 @@ for all practical purposes, but not a proof of impossibility).
 ## Project layout
 
 ```
+index.html             homepage (registry of burn addresses + pitch for the tool)
+tool/index.html        browser app (bundle already inlined — no build step to use it)
 src/burn.js            core PSBT-building logic (used by both CLI and browser app)
 src/browser-entry.js   thin wrapper exposing burn.js to the browser build
 cli.js                 command-line interface
-index.html             browser app (bundle already inlined — no build step to use it)
 test/burn.test.js      round-trip tests: confirms output is genuinely OP_RETURN,
                        amounts are correct, and unsafe inputs are rejected
 design/homepage.html   chosen homepage design (design/archive/ holds superseded drafts)
 tasks/                 launch task checklists
 ```
 
-To rebuild `index.html`'s embedded bundle after editing `src/burn.js`:
+To rebuild `tool/index.html`'s embedded bundle after editing `src/burn.js`:
 
 ```bash
 npm install
 npx esbuild src/browser-entry.js --bundle --platform=browser --format=iife \
   --outfile=dist/bundle.js --minify
-# then splice dist/bundle.js into index.html in place of the prior bundle
+# then splice dist/bundle.js into tool/index.html in place of the prior bundle
 ```
 
 ## Running the tests

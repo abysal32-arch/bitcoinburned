@@ -1,0 +1,21 @@
+# task-02 regression vector — task-03 must reproduce this EXACT PSBT after rebundling
+#
+# Produced by the browser tool (tool/index.html) on 2026-07-14 and confirmed
+# byte-identical to cli.js output with the same inputs.
+#
+# Inputs (form fields / CLI flags):
+#   txid:            aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa  (64 x 'a')
+#   vout:            0
+#   value:           150000  (sats)
+#   address:         bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4
+#   network:         mainnet (default)
+#   mode:            full burn (default)
+#   fee:             300  (sats)
+#   message:         smoke
+#
+# Expected results:
+#   burnAmount:      149700 sats
+#   OP_RETURN hex:   6a05736d6f6b65
+#
+# PSBT (base64):
+cHNidP8BAEMCAAAAAaqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqAAAAAAD/////AcRIAgAAAAAAB2oFc21va2UAAAAAAAEBH/BJAgAAAAAAFgAUdR526BmRltRUlBxF0bOjI/FDO9YAAA==
