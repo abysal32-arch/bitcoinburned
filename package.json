@@ -1,0 +1,22 @@
+{
+  "name": "btc-burn-tool",
+  "version": "1.0.0",
+  "description": "Build an unsigned PSBT that provably burns bitcoin via an OP_RETURN output. Never touches a private key.",
+  "main": "src/burn.js",
+  "bin": {
+    "btc-burn": "cli.js"
+  },
+  "scripts": {
+    "test": "node test/burn.test.js",
+    "build:web": "esbuild src/browser-entry.js --bundle --platform=browser --format=iife --outfile=dist/bundle.js --minify"
+  },
+  "keywords": ["bitcoin", "op_return", "psbt", "burn", "taproot"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bitcoinjs-lib": "^7.0.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1"
+  }
+}
