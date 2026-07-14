@@ -285,6 +285,8 @@
         Its original 50 BTC coinbase reward is stuck for an unrelated protocol reason, but coins sent there
         <em>afterward</em> could, in principle, be spent by whoever holds that key. For a burn that's provable rather
         than merely infeasible, use our <a href="#tool" style="color:var(--tier2);">OP_RETURN tool</a> below.</p>
+        <p>Nothing on this site is an inducement to burn bitcoin — it's a reference and a tool, not advice. Verify
+        every figure here yourself on a block explorer before trusting it.</p>
       </div>
     </div>
   </section>
@@ -295,13 +297,13 @@
       <div class="sec-label">Registry</div>
       <h2 class="sec-title">Well-known burn addresses</h2>
       <p class="sec-intro">Ordered from the earliest to the most recent, tracing Bitcoin's history of destruction from the
-      genesis block onward. Balances are live, public, and verifiable on any block explorer, and shown approximately —
+      genesis block onward. Balances are public and verifiable on any block explorer, and shown here approximately —
       they change as people keep sending coins to these addresses.</p>
     </div>
 
     <div class="addr-list">
 
-      <div class="addr-card">
+      <div class="addr-card" data-address="1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa">
         <div>
           <div class="addr-top">
             <span class="addr-string">1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</span>
@@ -315,20 +317,20 @@
         </div>
         <div class="addr-bal">
           <div class="date">Jan 3, 2009</div>
-          <div class="amt">~100 BTC</div>
-          <div class="lbl">held / tribute</div>
-          <div class="note">50 BTC coinbase stuck</div>
+          <div class="amt">~57 BTC</div>
+          <div class="lbl">sent as tribute</div>
+          <div class="note">+50 BTC genesis reward, stuck</div>
         </div>
       </div>
 
-      <div class="addr-card">
+      <div class="addr-card" data-address="1CounterpartyXXXXXXXXXXXXXXXUWLpVr">
         <div>
           <div class="addr-top">
             <span class="addr-string">1CounterpartyXXXXXXXXXXXXXXXUWLpVr</span>
             <span class="tier-pill pill-2">NO-KEY · INFEASIBLE</span>
           </div>
           <div class="addr-name">The Counterparty Burn</div>
-          <div class="addr-desc">During January 2014, ~2,130 BTC was destroyed here to create the Counterparty (XCP)
+          <div class="addr-desc">In early 2014, ~2,130 BTC was destroyed here to create the Counterparty (XCP)
           token via proof-of-burn — participants burned real bitcoin to mint XCP fairly, with no ICO or pre-mine.
           One of the largest single burn events in Bitcoin's history by volume.</div>
         </div>
@@ -340,26 +342,26 @@
         </div>
       </div>
 
-      <div class="addr-card">
+      <div class="addr-card" data-address="1ChancecoinXXXXXXXXXXXXXXXXXZELUFD">
         <div>
           <div class="addr-top">
             <span class="addr-string">1ChancecoinXXXXXXXXXXXXXXXXXZELUFD</span>
             <span class="tier-pill pill-2">NO-KEY · INFEASIBLE</span>
           </div>
           <div class="addr-name">The Chancecoin Burn</div>
-          <div class="addr-desc">Later in 2014, another proof-of-burn address, used to bootstrap the Chancecoin project.
-          Together with Counterparty and the null address, these account for the overwhelming majority of all BTC
-          ever sent to burn addresses.</div>
+          <div class="addr-desc">In 2014, another proof-of-burn address, used to bootstrap Chancecoin — a
+          decentralized-casino project. Roughly 480 BTC was destroyed here, making it and Counterparty the two
+          largest proof-of-burn projects of the era.</div>
         </div>
         <div class="addr-bal">
           <div class="date">2014</div>
-          <div class="amt">large</div>
-          <div class="lbl">proof-of-burn</div>
-          <div class="note">top-3 by volume</div>
+          <div class="amt">~480 BTC</div>
+          <div class="lbl">received all-time</div>
+          <div class="note">proof-of-burn</div>
         </div>
       </div>
 
-      <div class="addr-card">
+      <div class="addr-card" data-address="1111111111111111111114oLvT2">
         <div>
           <div class="addr-top">
             <span class="addr-string">1111111111111111111114oLvT2</span>
@@ -373,13 +375,13 @@
         </div>
         <div class="addr-bal">
           <div class="date">2015 →</div>
-          <div class="amt">~510 BTC</div>
+          <div class="amt">~808 BTC</div>
           <div class="lbl">received all-time</div>
-          <div class="note">256k+ txns</div>
+          <div class="note">259k+ txns</div>
         </div>
       </div>
 
-      <div class="addr-card">
+      <div class="addr-card" data-address="1BitcoinEaterAddressDontSendf59kuE">
         <div>
           <div class="addr-top">
             <span class="addr-string">1BitcoinEaterAddressDontSendf59kuE</span>
@@ -391,10 +393,10 @@
           tribute or as symbolic burns.</div>
         </div>
         <div class="addr-bal">
-          <div class="date">mid-2010s →</div>
-          <div class="amt">~13.3 BTC</div>
+          <div class="date">2014 →</div>
+          <div class="amt">~13.4 BTC</div>
           <div class="lbl">received all-time</div>
-          <div class="note">400+ txns</div>
+          <div class="note">5,600+ txns</div>
         </div>
       </div>
 
@@ -464,7 +466,7 @@ value: <span class="c-ok">0.05000000 BTC</span><br><br>
 </main>
 
 <footer>
-  <div>bitcoinburned.com — open source, MIT licensed. Not financial advice; burning is irreversible.</div>
+  <div>bitcoinburned.com — open source, MIT-licensed, fully client-side. No analytics, no tracking, no keys — ever. Not financial advice; burning is irreversible.</div>
   <div class="footer-links">
     <a href="#">GitHub</a> <!-- TODO(task-08): repo URL -->
     <a href="#addresses">Registry</a>
