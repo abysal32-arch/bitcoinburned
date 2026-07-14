@@ -57,4 +57,5 @@ Testnet4 infra from Joe's other project (paths outside this repo, TESTNET-ONLY c
 
 ## Amendments (append-only)
 
-- (none yet)
+- 2026-07-14 (task-02): `tool/index.html` has a small `Buffer.from` shim `<script>` immediately before the bundle `<script>` — the bundled `src/burn.js` calls the Node `Buffer` global (lines 119/121), which doesn't exist in browsers (Build previously always threw). Any rebundle (task-03+) must either keep the shim ahead of the bundle or make `burn.js` browser-native and remove it; `tasks/task-02/psbt-vector.txt` is the regression vector.
+- 2026-07-14 (task-02): Node is at `C:\Program Files\nodejs\` (machine PATH); if a session's shell has a stale PATH, invoke `node.exe`/`npx.cmd` by full path.

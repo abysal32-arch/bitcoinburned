@@ -13,7 +13,7 @@ Goal: **bitcoinburned.com live**, homepage per Joe's chosen design (`design/home
 | # | Task | Status | Commit | Result / notes for next task |
 |---|------|--------|--------|------------------------------|
 | 01 | Repo foundation: layout fix, tests green, git init | ✅ | 39a0f03 | Node 24.18.0 LTS installed via winget (fresh shells have it on PATH). Layout matches _SHARED.md map; 9/9 tests PASS; CLI help + smoke OK; README layout section fixed. esbuild 0.28.1 works (`npx esbuild`) despite an npm allow-scripts postinstall warning — task-03 unblocked. |
-| 02 | Site restructure: homepage at root, tool at /tool/ | ⬜ | — | — |
+| 02 | Site restructure: homepage at root, tool at /tool/ | ✅ | d07d0ba | Two-page site works both directions; PSBT vector at task-02/psbt-vector.txt (browser output = CLI output, byte-identical). FIXED pre-existing bug: browser Build always threw "Buffer is not defined" (src/burn.js:119,121 use the Node Buffer global; bundle has no polyfill) — tool/index.html now has a minimal Buffer.from shim in its own `<script>` BEFORE the bundle. Task-03: rebundle must keep the shim working or fix burn.js to be browser-native (TextEncoder/Uint8Array) and drop it; verify against the vector. |
 | 03 | Reproducible build: bundle → tool page in one command | ⬜ | — | — |
 | 04 | Tool page: brand header/footer + validation UX | ⬜ | — | — |
 | 05 | Homepage content: fact-check registry, legal/privacy copy | ⬜ | — | — |
