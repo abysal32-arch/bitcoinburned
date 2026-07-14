@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "node test/burn.test.js",
-    "build:web": "esbuild src/browser-entry.js --bundle --platform=browser --format=iife --outfile=dist/bundle.js --minify"
+    "build:web": "esbuild src/browser-entry.js --bundle --platform=browser --format=iife --outfile=dist/bundle.js --minify",
+    "build:tool": "node scripts/build-tool.js"
   },
   "keywords": ["bitcoin", "op_return", "psbt", "burn", "taproot"],
   "author": "",

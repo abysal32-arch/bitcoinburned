@@ -118,6 +118,7 @@ tool/index.html        browser app (bundle already inlined — no build step to 
 src/burn.js            core PSBT-building logic (used by both CLI and browser app)
 src/browser-entry.js   thin wrapper exposing burn.js to the browser build
 cli.js                 command-line interface
+scripts/build-tool.js  rebuilds the inlined bundle (`npm run build:tool`)
 test/burn.test.js      round-trip tests: confirms output is genuinely OP_RETURN,
                        amounts are correct, and unsafe inputs are rejected
 design/homepage.html   chosen homepage design (design/archive/ holds superseded drafts)
@@ -128,10 +129,13 @@ To rebuild `tool/index.html`'s embedded bundle after editing `src/burn.js`:
 
 ```bash
 npm install
-npx esbuild src/browser-entry.js --bundle --platform=browser --format=iife \
-  --outfile=dist/bundle.js --minify
-# then splice dist/bundle.js into tool/index.html in place of the prior bundle
+npm run build:tool
 ```
+
+This bundles `src/browser-entry.js` with esbuild and splices the result into
+`tool/index.html` between the `BUNDLE:START` / `BUNDLE:END` markers. Never
+edit the inlined bundle by hand — rerun the command instead. The build is
+deterministic: repeat runs produce a byte-identical file.
 
 ## Running the tests
 
