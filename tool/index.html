@@ -563,7 +563,7 @@
   </div>
 
   <footer>
-    <span>MIT licensed · fully client-side · <a href="#" id="view-source-link">view source</a></span>
+    <span>MIT licensed · fully client-side · <a href="https://github.com/abysal32-arch/bitcoinburned" target="_blank" rel="noopener" title="This page is the entire application — use View Page Source (Ctrl/Cmd+U) to read every line, including the bundled signing-free PSBT logic.">view source</a></span>
     <span>part of <a href="../">bitcoinburned.com</a></span>
     <span>No private keys ever leave your wallet software.</span>
   </footer>
@@ -769,11 +769,6 @@ PROCEED WITH CAUTION!
     }).catch(() => {
       document.execCommand('copy');
     });
-  });
-
-  $('view-source-link').addEventListener('click', (e) => {
-    e.preventDefault();
-    alert('This page is the entire application. Use "View Page Source" (Ctrl/Cmd+U) to read every line, including the bundled signing-free PSBT logic.');
   });
 })();
 </script>

@@ -12,6 +12,10 @@ This repo is the source for **bitcoinburned.com**, a static two-page
 site: `index.html` at the root is the homepage (burn-address registry +
 pitch), and `tool/index.html` is the burn tool itself.
 
+> **Status: pre-launch.** Live staging preview:
+> **<https://abysal32-arch.github.io/bitcoinburned/>**
+> The `bitcoinburned.com` custom domain goes live with the v1.0.0 release.
+
 Two ways to use the tool, same underlying logic:
 
 - **`tool/index.html`** — a single, dependency-free file. Open it in any
@@ -42,9 +46,8 @@ you sign, not just on this page.
 ## Using the browser app (`tool/index.html`)
 
 1. Open `tool/index.html` directly in a browser (double-click it, or drag
-   it into a browser window). No internet connection is required except to
-   load two Google Fonts; the transaction logic itself runs fully
-   offline.
+   it into a browser window). No internet connection is required at all —
+   fonts are self-hosted and the transaction logic runs fully offline.
 2. Fill in the UTXO you want to spend from (txid, output index, value in
    satoshis, and the address it currently sits at — get these from your
    wallet or a block explorer).

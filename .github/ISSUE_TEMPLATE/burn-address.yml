@@ -1,0 +1,60 @@
+name: Submit a burn address
+description: Propose a well-known Bitcoin burn address for the registry.
+title: "[Registry] Add burn address: "
+labels: ["registry", "burn-address"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping expand the registry. Only **well-known, verifiable**
+        burn addresses belong here — one whose coins are provably (or
+        near-certainly) destroyed, with public evidence anyone can check.
+        This project never touches private keys, and the registry never lists
+        an address it can't source.
+  - type: input
+    id: address
+    attributes:
+      label: Bitcoin address
+      description: The full burn address (mainnet). Copy it exactly, character for character.
+      placeholder: "1BitcoinEaterAddressDontSendf59kuE"
+    validations:
+      required: true
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Why is this a burn address?
+      description: >-
+        What makes it a burn? e.g. an OP_RETURN proof-of-burn, an unspendable
+        pattern/vanity address with no derivable key, a documented protocol
+        burn, genesis coins, etc.
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Sources
+      description: >-
+        Public links that back the claim — block-explorer pages, protocol docs,
+        articles. At least one is required; more is better.
+      placeholder: |
+        - https://mempool.space/address/...
+        - https://...
+    validations:
+      required: true
+  - type: input
+    id: amount
+    attributes:
+      label: Approximate amount burned (BTC)
+      description: Rough total ever sent to the address, in BTC. An estimate is fine.
+      placeholder: "~13.4"
+    validations:
+      required: false
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: This is a real, verifiable burn address — not spam or self-promotion.
+          required: true
+        - label: I've included at least one public source above.
+          required: true
