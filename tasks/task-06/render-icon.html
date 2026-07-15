@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><title>apple-touch-icon generator (throwaway) — task-06</title>
+<style>body{margin:0;background:#0b0b0b;color:#ccc;font-family:system-ui,sans-serif;padding:24px;}
+img{display:block;border:1px solid #333;margin:8px 0;image-rendering:auto;}
+code{color:#8fd}</style></head>
+<body>
+<p>Rasterizes <code>/assets/favicon.svg</code> to a 180&times;180 PNG on
+<code>window.__iconPng</code> for saving to <code>assets/apple-touch-icon.png</code>.</p>
+<img id="out" width="180" height="180" alt="apple touch icon">
+<script>
+fetch('/assets/favicon.svg').then(r => r.text()).then(svgText => {
+  const blob = new Blob([svgText], {type:'image/svg+xml'});
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement('canvas');
+    c.width = 180; c.height = 180;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0, 180, 180);
+    const png = c.toDataURL('image/png');
+    window.__iconPng = png;
+    window.__iconReady = true;
+    document.getElementById('out').src = png;
+  };
+  img.onerror = e => { window.__iconError = String(e); };
+  img.src = url;
+});
+</script>
+</body></html>

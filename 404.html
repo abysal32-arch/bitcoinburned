@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 — bitcoinburned.com</title>
+<meta name="robots" content="noindex">
+<!-- Root-absolute paths: GitHub Pages serves this file for any unknown path depth. -->
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<meta name="theme-color" content="#181513">
+<style>
+  @font-face{font-family:'Space Grotesk';font-style:normal;font-weight:500 700;font-display:swap;src:url(/assets/fonts/space-grotesk.woff2) format('woff2');}
+  @font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:400 500;font-display:swap;src:url(/assets/fonts/ibm-plex-mono-500.woff2) format('woff2');}
+  :root{
+    --charcoal:#181513; --cream:#EDE7DC; --muted:#9C948A;
+    --btc-orange:#F7931A; --fire-red:#E23B18; --fire-red-bright:#FF4D24;
+    --font-head:'Space Grotesk', sans-serif; --font-mono:'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:var(--charcoal); color:var(--cream);
+    font-family:var(--font-mono); -webkit-font-smoothing:antialiased;
+    display:flex; align-items:center; justify-content:center; text-align:center; padding:24px;
+  }
+  body::before{
+    content:''; position:fixed; top:0; left:0; right:0; height:340px; z-index:0;
+    background:radial-gradient(ellipse 60% 100% at 50% 0%, rgba(247,147,26,0.11), rgba(226,59,24,0.06) 45%, transparent 72%);
+    pointer-events:none;
+  }
+  .box{position:relative; z-index:1; max-width:460px;}
+  .mark{
+    width:52px; height:52px; border-radius:12px; margin:0 auto 26px;
+    background:radial-gradient(circle at 32% 26%, #FFA733, var(--fire-red) 62%, #7A1E0C 100%);
+    display:flex; align-items:center; justify-content:center; font-size:24px;
+    box-shadow:0 0 22px rgba(247,147,26,0.35);
+  }
+  h1{
+    font-family:var(--font-head); font-weight:700; font-size:72px; letter-spacing:-0.03em;
+    margin:0 0 6px; color:var(--fire-red-bright);
+  }
+  h2{font-family:var(--font-head); font-weight:600; font-size:22px; margin:0 0 16px; letter-spacing:-0.01em;}
+  p{color:var(--muted); font-size:14px; line-height:1.7; margin:0 0 30px;}
+  a.home{
+    display:inline-block; background:var(--fire-red); color:#fff; text-decoration:none;
+    padding:12px 24px; border-radius:8px; font-weight:600; font-size:14px; font-family:var(--font-head);
+  }
+  a.home:hover{background:var(--fire-red-bright);}
+  a.home:focus-visible{outline:2px solid #FFA733; outline-offset:3px;}
+</style>
+</head>
+<body>
+  <main class="box">
+    <div class="mark" aria-hidden="true">🔥</div>
+    <h1>404</h1>
+    <h2>This page went up in smoke.</h2>
+    <p>The address you were looking for doesn't exist here — but plenty of bitcoin has permanently vanished elsewhere. Head back and take a look.</p>
+    <a class="home" href="/">← Back to bitcoinburned.com</a>
+  </main>
+</body>
+</html>
