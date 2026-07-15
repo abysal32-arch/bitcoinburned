@@ -27,6 +27,15 @@ before launch; the site shipping is the deliverable.
 ## Site
 - **Optional testnet faucet / how-to-burn guide page.** A short walkthrough (get a UTXO, build,
   sign in Sparrow/Electrum, broadcast) would lower the barrier — kept separate from the tool so
-  the tool page stays zero-dependency and zero-network.
+  the tool page stays zero-dependency and zero-network. Include the **broadcast caveat**: sending
+  value into an OP_RETURN trips Core's `sendrawtransaction` burn guard (needs `maxburnamount`);
+  most GUI wallets broadcast it fine, but a note saves confusion.
 - **Custom-domain hygiene.** After go-live, confirm the `www` → apex redirect and re-run an OG
-  link-preview check (the `og:image` renders on social unfurls).
+  link-preview check (the `og:image` renders on social unfurls). *(go-live 2026-07-15: both
+  verified — www/http → apex 301s, og:image 200.)*
+- **HTTPS / cert-renewal watch.** A few weeks post-launch, re-confirm `Enforce HTTPS` is still on
+  and the GitHub Pages certificate auto-renewed (GitHub handles renewal — worth one check).
+  Current cert expires 2026-10-13.
+- **Add `/favicon.ico`.** The site declares an SVG favicon that modern browsers use, but
+  `/favicon.ico` 404s on the legacy fallback request. Harmless, but a tiny static `favicon.ico`
+  would silence it. (Found during go-live QA, 2026-07-15.)

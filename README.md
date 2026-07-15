@@ -12,9 +12,10 @@ This repo is the source for **bitcoinburned.com**, a static two-page
 site: `index.html` at the root is the homepage (burn-address registry +
 pitch), and `tool/index.html` is the burn tool itself.
 
-> **Status: pre-launch.** Live staging preview:
-> **<https://abysal32-arch.github.io/bitcoinburned/>**
-> The `bitcoinburned.com` custom domain goes live with the v1.0.0 release.
+> **Status: live — v1.0.0.** **<https://bitcoinburned.com>**
+> Verified end-to-end on testnet4: an unsigned burn PSBT built by the deployed tool,
+> signed and broadcast in a separate wallet, then confirmed provably destroyed on-chain —
+> [txid `d689fcbf…d4e0d519`](https://mempool.space/testnet4/tx/d689fcbfb8c14eaa8b023a27d2ce8bbc22c73bd459900c14ac44b9ecd4e0d519).
 
 Two ways to use the tool, same underlying logic:
 
