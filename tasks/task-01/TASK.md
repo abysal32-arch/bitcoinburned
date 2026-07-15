@@ -1,43 +1,49 @@
-# task-01 — Repo foundation: layout fix, tests green, git init
+# task-01 — Domain cutover: bitcoinburned.com live (HTTPS) 🧑‍🤝‍🧑JOE(DNS)
 
 ## Goal
-Turn the loose folder into a working, version-controlled project whose layout matches what the code already expects. Nothing user-visible changes yet.
+Point the real domain Joe owns at the Pages site and serve it at
+**https://bitcoinburned.com** with HTTPS enforced. This is the launch.
 
-## Why (context)
-Files were dumped flat into the folder root, but `cli.js` requires `./src/burn` and `test/burn.test.js` requires `../src/burn` — so nothing currently runs. No git, no node_modules.
+## Why this can't be one unattended step
+Setting the custom domain makes Pages **301-redirect** the `github.io/bitcoinburned/`
+URL to `bitcoinburned.com`. If DNS isn't resolving yet, the site is unreachable at
+*both* URLs until it propagates. So the order is strict: **Joe sets DNS first**, confirm
+it resolves, *then* commit the `CNAME` / set the custom domain. Start DNS early — apex
+propagation + Pages cert issuance can take minutes to a few hours.
 
-## Preconditions
-None — first task. Everything sits flat in the repo root (see `_SHARED.md` file map for the "before" state).
+## Joe checkpoint — DNS (needs his registrar login)
+Give Joe these exact records for **bitcoinburned.com** (verified against GitHub Pages docs
+2026-07-15 — re-check if it's been a while; they change rarely):
+- Apex `A` records → `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
+- (optional but recommended) Apex `AAAA` → `2606:50c0:8000::153`, `2606:50c0:8001::153`,
+  `2606:50c0:8002::153`, `2606:50c0:8003::153`
+- `www` `CNAME` → `abysal32-arch.github.io.`
+- Canonical choice: **apex canonical, `www` redirects** (default). Ask Joe if he prefers www.
 
-## Steps
-1. **Toolchain check**: `node --version` / `npm --version`. If Node is missing, install LTS: `winget install OpenJS.NodeJS.LTS`, then use a fresh shell (or full path to node) for the rest.
-2. **git init** in the repo root. Create `.gitignore`:
-   ```
-   node_modules/
-   dist/
-   *.log
-   ```
-3. **Restructure** (moves, no code edits):
-   - `burn.js` → `src/burn.js`
-   - `browser-entry.js` → `src/browser-entry.js`
-   - `burn.test.js` → `test/burn.test.js`
-   - `bitcoinburned-homepage (3).html` → `design/homepage.html`  ← Joe's chosen design, source of truth
-   - `bitcoinburned-homepage (4).html` → `design/archive/homepage-v4-unused.html`  ← superseded draft; archive, do NOT delete
-   - `cli.js`, `index.html`, `package.json`, `README.md`, `LICENSE` stay in root for now (task-02 moves `index.html`).
-4. `npm install` (commit the generated `package-lock.json`).
-5. **Gates**:
-   - `node test/burn.test.js` → every line `PASS`, exit code 0.
-   - `node cli.js --help` prints usage.
-   - CLI smoke: `node cli.js --txid <64×'a'> --vout 0 --value 150000 --address bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4 --fee 300 --message "smoke"` → prints a base64 PSBT (that address is the BIP-173 test vector; this is unsigned math only, nothing goes near a network).
-6. **README sanity**: its "Project layout" section should now be true. Fix any path drift (e.g. it says `src/burn.js`, good; adjust the `browser-entry.js` line spacing typo if present). Don't rewrite the README beyond accuracy.
-7. Commit: `task-01: repo layout, deps installed, tests green`.
+Wait for Joe to confirm the records are saved, then verify resolution before cutover:
+`nslookup bitcoinburned.com` (expect the four A IPs) and `nslookup www.bitcoinburned.com`.
+
+## Steps (after DNS resolves)
+1. Add a `CNAME` file at the repo **root** containing exactly one line: `bitcoinburned.com`
+   (no scheme, no trailing slash). Commit + push. In the repo's Pages settings, set the custom
+   domain to `bitcoinburned.com` and let the DNS check pass. (`gh.exe` for API; UI is fine too.)
+2. Enable **Enforce HTTPS** once the cert provisions (poll — it can lag the DNS check by minutes–hours).
+3. **Confirm** (do not change) the absolute URLs now resolve on-domain: `sitemap.xml`,
+   `robots.txt` sitemap pointer, and both pages' `canonical`/`og:url`/`og:image`. They were
+   authored as `https://bitcoinburned.com/...` and become correct now.
+4. **Live gate — everything on https://bitcoinburned.com:**
+   - Homepage + tool both 200; assets 200; **zero 404**; HTTPS lock, no mixed content.
+   - Internal links (relative) work from domain root; `www.bitcoinburned.com` → apex redirect.
+   - Homepage: live mempool.space balances populate; only external call is mempool.space.
+   - Tool: still ZERO third-party requests; console clean on both pages.
+   - `404.html` served on an unknown path.
+5. Update STATUS (commit hash, live-confirmed notes). Commit `task-01: go-live — custom domain + HTTPS`.
 
 ## Do NOT
-- Edit any logic in `src/burn.js` / `cli.js` / tests.
-- Touch `index.html` content.
-- Delete either homepage draft.
+- Commit the `CNAME` / set the custom domain **before** DNS resolves (it takes staging down).
+- Touch site content or the inlined bundle — this task is domain/DNS only.
 
 ## Exit criteria
-- `node test/burn.test.js` fully green; CLI help + smoke run work.
-- Folder matches the `_SHARED.md` file map (minus `tool/` and `scripts/`, which come later).
-- First git commit exists. STATUS table updated. Joe told: safe to `/clear`, next = task-02.
+https://bitcoinburned.com serves both pages with **Enforce HTTPS** on; `www` redirects to apex;
+live gate green (zero-404, no mixed content, homepage balances live, tool zero-network); `CNAME`
+committed; STATUS updated; Joe told which URL is canonical. → task-03 can tag once task-02's proof exists.

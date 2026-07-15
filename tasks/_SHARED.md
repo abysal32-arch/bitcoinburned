@@ -1,67 +1,69 @@
-# _SHARED.md — context every task session must know
+# _SHARED.md — context every launch-round task must know
 
 ## What this project is
+**bitcoinburned.com** — a static, open-source (MIT) two-page site:
+1. **Homepage** (`/` = `index.html`): registry of well-known BTC burn addresses + pitch for the tool.
+2. **Burn tool** (`/tool/` = `tool/index.html`): a single-file client-side app that builds an
+   **unsigned PSBT** burning BTC into an `OP_RETURN` output. The bitcoinjs-lib bundle is inlined
+   in the HTML (one `<script>`, spliced between `BUNDLE:START/END`). Core logic: `src/burn.js`
+   → `buildBurnPsbt()`; browser wrapper `src/browser-entry.js` (`window.BurnTool`); CLI `cli.js`.
 
-**bitcoinburned.com** — a static, open-source (MIT) site with two pages:
+## Hard invariants (violating any = stop and tell Joe)
+- **NEVER touch private keys.** The tool builds unsigned PSBTs only.
+- **Real transactions by us: testnet4/regtest ONLY.** Never sign/broadcast mainnet.
+- **Irreversibility warnings stay.** Copy edits preserve or strengthen them.
+- **Fully static + private.** No server, no analytics/tracking, no CDN-loaded logic.
+  - The **homepage** makes **exactly one** external call: live balances from `mempool.space`
+    (5 GETs, silent static fallback). The **tool page makes ZERO network requests** — its full
+    offline capability is a trust property. **Never add a network call to the tool.**
 
-1. **Homepage** (`/`): registry of well-known BTC burn addresses + pitch for the tool. Joe's chosen design is `design/homepage.html` (dark charcoal/ember theme, Space Grotesk + IBM Plex fonts, sections: nav / hero / lore / honesty-callout / #addresses registry (5 cards) / #tool OP_RETURN explainer / #how diff-grid / footer).
-2. **Burn tool** (`/tool/`): the existing "Provable Burn" single-file app (paper-certificate look, Newsreader font) — a 3-step form that builds an **unsigned PSBT** burning BTC into an OP_RETURN output. Fully client-side; bitcoinjs-lib bundle is inlined in the HTML (~290 KB, one `<script>`).
-
-Core logic: `src/burn.js` → `buildBurnPsbt(opts)` (networks: mainnet/testnet/regtest; full or partial burn; optional UTF-8 message; returns `{psbtBase64, burnAmount, changeAmount, opReturnScriptHex}`). Wrapped for browser by `src/browser-entry.js` (exposes `window.BurnTool`), for terminal by `cli.js`. Tests: `test/burn.test.js` (plain node asserts, no network). Only bc1q/bc1p (segwit/taproot) inputs supported — legacy needs `nonWitnessUtxo`, deliberately out of v1 scope.
-
-## Hard invariants (violating any of these = stop and tell Joe)
-
-- **NEVER touch private keys.** The tool builds unsigned PSBTs only. No feature may ask for, generate, store, or transmit a key.
-- **Real transactions by us: testnet4/regtest ONLY.** Never sign/broadcast mainnet. (The tool *produces* mainnet PSBTs for users — that's its purpose — but we never execute one.)
-- **Irreversibility warnings stay.** Copy edits must preserve or strengthen them.
-- **Fully static + private.** No server, no analytics, no tracking, no CDN-loaded logic. Both pages must work from `file://` offline (fonts become self-hosted in task-06).
-
-## File map (target state after task-02; before task-01 everything is flat in the repo root)
-
-```
-index.html            homepage (from design/homepage.html)
-tool/index.html       the burn tool app (was root index.html)
-src/burn.js           core PSBT logic
-src/browser-entry.js  browser wrapper
-test/burn.test.js     tests — `node test/burn.test.js`, all must PASS
-cli.js                CLI (requires ./src/burn)
-scripts/              build scripts (from task-03)
-design/homepage.html  Joe's chosen homepage design (source of truth for look)
-design/archive/       superseded drafts — never load these
-tasks/                this system
-```
+## Current deployed state (as of round-2 start, 2026-07-15)
+- Repo: **github.com/abysal32-arch/bitcoinburned** (public, MIT), default branch **main**.
+- Live staging: **https://abysal32-arch.github.io/bitcoinburned/** (Pages, deploy-from-branch
+  main/root, `.nojekyll`, HTTPS, no CSP). Both pages + assets 200, zero-404 (task-08).
+- **Absolute URLs already point at `https://bitcoinburned.com/`** — canonical, `og:url`,
+  `og:image`, `twitter:image` (both pages), `sitemap.xml`, `robots.txt` sitemap pointer.
+  They are OFF-domain on staging (expected) and become CORRECT the instant DNS resolves —
+  **confirm, don't change** (verified 2026-07-15).
+- `package.json` version is already **1.0.0**. No `CNAME` file yet (add it during cutover).
+- Regression vector: **`test/psbt-vector.txt`** (mainnet full burn, txid 64×a, vout 0,
+  value 150000, fee 300, msg "smoke" → known PSBT). CLI and the in-browser Build both reproduce
+  it byte-identical.
 
 ## Commands / environment
+- Windows 10, PowerShell. A fresh shell's PATH is often stale:
+  - Node: `C:\Program Files\nodejs\node.exe` (invoke by full path if `node` is not found).
+  - GitHub CLI: `C:\Program Files\GitHub CLI\gh.exe` (authed as `abysal32-arch`; NOT on PATH).
+- Test gate: `node test/burn.test.js` (must be 9/9 PASS, exit 0).
+- Rebuild the inlined bundle only if `src/` changes: `npm run build:tool` (esbuild → splice
+  between the BUNDLE markers; deterministic/idempotent). Never hand-edit the bundle line.
 
-- Windows 10, PowerShell + Git Bash. Node.js required (task-01 verifies/installs, LTS via winget).
-- `npm install` once per clone; `node test/burn.test.js` = the test gate (all lines `PASS`, exit code 0).
-- Rebuild browser bundle (from task-03): `npm run build:tool` (esbuild → splice into `tool/index.html` between `<!-- BUNDLE:START/END -->` markers). Never hand-edit the bundle line.
-- Git: repo lives in this folder (task-01 inits it). Short imperative commit subjects, prefix `task-NN:`.
-- Local preview: both pages work via `file://`; the Claude Preview tools or `npx serve .` also work.
+## Testnet4 infra (task-02 only — the burn proof)
+Lives OUTSIDE this repo. **TESTNET-ONLY; never commit any wallet/credential here.**
+`PROOF.md` may contain only public chain data (txid/address/etc.).
+- Node: bitcoind v29.4.0, testnet4, SYNCED. RPC `127.0.0.1:48332`, cookie auth.
+  - cli: `C:\Users\Joe\Desktop\swap key\tools\bitcoin-29.4\bin\bitcoin-cli.exe`
+  - datadir: `C:\Users\Joe\Desktop\swap key\testnet-data` (invoke `-testnet4 -datadir=... -rpcport=48332`)
+- **Dedicated Core wallet `bitcoinburned-burn`** (descriptor, testnet4, in the node's default
+  walletdir — already created + loaded):
+  - receive/UTXO address: `tb1qr82u5h86epepnxlvx5me2njkhs8pufjhfmhzfp`
+  - change address:       `tb1qrd4qaa2y53fwc6tevndflggdvwtts3umungyaf`
+  - The `swap key\testnet-wallets\walletA|B` are SwapKey-format wallets earmarked for a
+    different project — **DO NOT spend them.** Use `bitcoinburned-burn` only.
+- Explorer: <https://mempool.space/testnet4>
 
-## External resources (task-09 only)
-
-Testnet4 infra from Joe's other project (paths outside this repo, TESTNET-ONLY credentials, NEVER commit anything from there):
-- Synced node datadir: `C:\Users\Joe\Desktop\swap key\testnet-data` (RPC port 48332, cookie auth).
-- Binaries: `C:\Users\Joe\Desktop\swap key\tools\bitcoin-29.4\bin\` (`bitcoind.exe`, `bitcoin-cli.exe`) — invoke by full path, not on PATH.
-- Wallets: `C:\Users\Joe\Desktop\swap key\testnet-wallets\`.
-- Explorer: https://mempool.space/testnet4
+## Local QA browser (optional, for re-verification)
+Claude Preview config `bitcoinburned-static` (port 3111) serves the repo root and mirrors
+Pages routing. For live-domain / real-clipboard / on-domain-balance checks, use the **Chrome
+extension** on the live site (the headless preview denies clipboard and blocks `file://`).
 
 ## Wrap-up protocol (every task)
-
-1. Task's exit criteria verified + `node test/burn.test.js` green.
-2. Commit (`task-NN: …`).
-3. Update STATUS table in `tasks/README.md`: ✅, commit hash, one-line result, anything the next task must know.
-4. If a fact in THIS file changed, append to Amendments below (dated, one line) — don't rewrite sections.
-5. Tell Joe: safe to `/clear`, next task is task-NN+1 (name it).
+1. Exit criteria verified + `node test/burn.test.js` green + working tree clean.
+2. Commit (`task-NN: …`, imperative subject).
+3. Update the STATUS table in `README.md`: ✅, commit hash, one-line result + notes for next task.
+4. If a fact here changed, append a dated line to Amendments below (don't rewrite sections).
+5. Tell Joe: safe to `/clear`, and name the next task.
 
 ## Amendments (append-only)
-
-- 2026-07-14 (task-02): `tool/index.html` has a small `Buffer.from` shim `<script>` immediately before the bundle `<script>` — the bundled `src/burn.js` calls the Node `Buffer` global (lines 119/121), which doesn't exist in browsers (Build previously always threw). Any rebundle (task-03+) must either keep the shim ahead of the bundle or make `burn.js` browser-native and remove it; `tasks/task-02/psbt-vector.txt` is the regression vector.
-- 2026-07-14 (task-02): Node is at `C:\Program Files\nodejs\` (machine PATH); if a session's shell has a stale PATH, invoke `node.exe`/`npx.cmd` by full path.
-- 2026-07-14 (task-04): the Buffer shim in `tool/index.html` now returns a Uint8Array subclass (`BufferLike`) with `toString('hex')` — required for the certificate's OP_RETURN hex display. Same placement rule as before: shim stays in its own `<script>` BEFORE the bundle, outside the BUNDLE markers.
-- 2026-07-14 (task-06): Fonts are now SELF-HOSTED in `assets/fonts/` (latin-subset woff2: 7 files + `LICENSE-NOTES.md`, all SIL OFL 1.1). Both pages' Google Fonts `<link>`s are gone, replaced by `@font-face` with relative paths (variable files carry weight-range descriptors; IBM Plex Mono is static per-weight). The site now makes **ZERO third-party requests** (verified via preview network tab on both pages) — do NOT re-introduce any CDN/Google Fonts.
-- 2026-07-14 (task-06): New sitewide files: `assets/{favicon.svg, apple-touch-icon.png (180²), og-image.png (1200×630)}`, `robots.txt`, `sitemap.xml`, `404.html`. OG/canonical/sitemap use ABSOLUTE `https://bitcoinburned.com/…` (final domain from day one) — **task-08 must deploy at that exact domain** (Pages custom domain) or these URLs point off-site. `404.html` uses root-absolute asset paths so Pages can serve it at any path depth. PNG generators kept (throwaway) in `tasks/task-06/`: `og-card.html`, `render-icon.html`.
-- 2026-07-14 (task-06): A11y — homepage `--muted-dim` bumped `#6E665D`→`#8D8377` (was 3.22:1 on charcoal, now ≥4.5:1 AA on charcoal/card/deep); homepage brand-mark got `aria-hidden="true"` + `a/button:focus-visible` outline; tool `#message` textarea got a `.visually-hidden <label>` (it was the one unlabeled input). NOT changed: tool `--brass` (#8C6D3F, 3.74:1 on paper) fails AA but is used only for decorative micro-labels/pill-borders/focus outlines — left as-is (out of task-06's homepage-scoped contrast item; flag for a future polish pass).
-- 2026-07-14 (task-07): The homepage (`index.html`) now makes **exactly one** external request — a live-balance GET to `https://mempool.space/api/address/{addr}` for each of the 5 registry cards (inline vanilla `<script>`, progressive enhancement, ~5s `AbortController`, silent static fallback on any failure). This is the ONLY third-party call the site is permitted to make. The `/tool/` page still makes **ZERO** network requests — its full offline capability is a trust property; **never add a network call to the tool.** task-06's "zero third-party requests" now carries this single sanctioned exception on the **homepage only** — task-09 QA should expect exactly `mempool.space` and nothing else (no Google/CDN/analytics). Endpoint confirmed CORS-open (`access-control-allow-origin: *`); the display rule is thousands-separators + ≤1 decimal (0 decimals for ≥100 BTC).
-- 2026-07-15 (task-08): Repo is PUBLISHED — **github.com/abysal32-arch/bitcoinburned** (public, MIT; GitHub account `abysal32-arch`). Live staging: **https://abysal32-arch.github.io/bitcoinburned/** (GitHub Pages, deploy-from-branch `main`/root, `.nojekyll`, HTTPS-enforced, NO CSP header so inline scripts run). Default branch is now `main` (renamed from `master`). `gh` CLI is at `C:\Program Files\GitHub CLI\gh.exe` — installed + authed, but **NOT on the shell PATH; invoke by full path.** The absolute `https://bitcoinburned.com/` URLs in OG/canonical/sitemap and the root-absolute asset paths in `404.html` are correct for the FINAL domain but point off-subpath during github.io staging — **task-10 (custom domain) resolves this; expected during staging, not a regression.** task-09 QA note: the Chrome-in-Chrome extension was offline this whole session, so the literal in-browser PSBT-vector Build was NOT clicked on the live site — verified transitively instead (served tool page byte-identical to the repo blob + `cli.js` reproduces the vector byte-exact, and task-02 established CLI output === browser output). Homepage still makes exactly ONE 3rd-party call (mempool.space); `/tool/` still ZERO.
+- 2026-07-15 (round-2 open): round-1 folders 01–10 removed; regression vector moved to
+  `test/psbt-vector.txt`; pre-launch QA recorded in commit `573f3cc`. Launch round = 3 tasks.
