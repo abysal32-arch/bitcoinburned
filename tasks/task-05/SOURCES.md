@@ -96,3 +96,21 @@ A multi-agent workflow (15 agents: 8 independent researchers + adversarial cross
 **Confirmed accurate, no change (survived adversarial refutation):** genesis Jan-3-2009 date; genesis ~57 BTC tribute figure and the tribute-vs-stuck-coinbase split (the split is the *more* accurate framing than a lumped "~107 BTC"); the 50-BTC-coinbase-unspendable code-quirk; "ordinary address Satoshi likely holds the key to"; Counterparty ~2,130 BTC / "early 2014" / "one of the largest single burn events"; null address ~808 BTC / 259k+ txns / all-zero-hash160 / ~2¹⁶⁰ framing / Blockstack usage / the 107-BTC-five-txn-May-2026 event; all five address strings (checksum-valid, match canonical sources, displayed string === `data-address`); honesty-callout energy/quantum framing; the diff-grid "no known key vs no key possible" distinction; the MIT LICENSE file exists.
 
 **Flagged for later (not a copy fix):** the PSBT "never touches your private key" claim is a statement about the tool's own code, not a chain fact, so the fact-checkers marked it UNCERTAIN (out of their scope). It is well-founded — `test/burn.test.js` confirms unsigned-PSBT/OP_RETURN output, the repo's hard invariant forbids key handling, and a grep of the app logic found no network calls or key handling — but a **dedicated security review of `cli.js` + the inlined `tool/` bundle** (e.g. `/security-review`) before mainnet is advisable. This belongs with task-09 QA, not task-05 copy.
+
+---
+
+# Task-07 addendum — live-balance reconciliation (2026-07-14)
+
+Task-07 wired the registry cards to `https://mempool.space/api/address/{addr}` (progressive enhancement; static fallback). Before wiring, live `chain_stats` were pulled and reconciled against the static task-05 figures above. **All five are within rounding of the static snapshot — no static fallback needed changing** (task-07 step 3 only rewrites a fallback when live differs >2×).
+
+| Card | Live `funded_txo_sum` (sats) | Live BTC (displayed) | Static fallback | Live `tx_count` |
+|---|---|---|---|---|
+| Genesis | 5,722,505,030 | ~57.2 BTC | ~57 BTC | 63,571 |
+| Counterparty | 213,099,775,494 | ~2,131 BTC | ~2,130 BTC | 3,127 |
+| Chancecoin | 48,019,572,673 | ~480 BTC | ~480 BTC | 273 |
+| Null | 80,827,168,602 | ~808 BTC | ~808 BTC | 259,458 |
+| Bitcoin Eater | 1,341,694,965 | ~13.4 BTC | ~13.4 BTC | 5,600 |
+
+- The small live/static drift on Genesis (57.2 vs 57) and Counterparty (2,131 vs 2,130) is just live rounding — same-day, far inside the >2× trigger. The display rule is thousands-separators with ≤1 decimal (0 decimals ≥100 BTC).
+- `access-control-allow-origin: *` verified on the endpoint (a real online browser gets live values; offline / `file://` keeps the static figures untouched, verified in the preview — sandboxed browser aborted the fetches at the 5 s timeout and the cards stayed static with only a `console.debug`).
+- All five have `spent_txo_sum = 0` (nothing ever spent → received = balance), so live `funded_txo_sum` only grows; live will always be ≥ these snapshots.
