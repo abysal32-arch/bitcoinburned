@@ -104,8 +104,9 @@ for all practical purposes, but not a proof of impossibility).
   wrong fee calculations. Get a real estimate from your wallet or a fee
   estimator and enter the total satoshi fee directly.
 - **`OP_RETURN` relay-size policy varies by node**, and has changed
-  over time (historically an 80-byte default in Bitcoin Core, raised
-  substantially as of Core v30). This affects whether your transaction
+  over time (historically an 80-byte default in Bitcoin Core, raised to
+  100,000 bytes in Core v30, released October 2025 — effectively removing
+  the cap, since a transaction hits the standard size limit first). This affects whether your transaction
   relays smoothly across the whole network, not whether the burn itself
   is valid — the consensus-level unspendability is unaffected either
   way.
