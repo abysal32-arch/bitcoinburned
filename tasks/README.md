@@ -21,7 +21,7 @@ everything else runs unattended.
 | # | Task | Status | Commit | Result / notes for next task |
 |---|------|--------|--------|------------------------------|
 | 01 | Domain cutover — bitcoinburned.com live w/ HTTPS 🧑‍🤝‍🧑JOE(DNS) | ✅ | `56576ec` | **Live: https://bitcoinburned.com**, Enforce HTTPS on (cert exp 2026-10-13, covers apex+www). www→apex 301, http→https 301; both pages 200, 0 broken assets, no mixed content; canonical/OG/sitemap/robots all on-domain; og-image + custom 404 serve; homepage mempool.space API healthy; tool zero-network (no fetch/XHR). External hosts = mempool.space (data) + github.com (link) only. **Canonical = apex.** Deferred to task-02: browser-runtime QA (clipboard copy, DOM balance render, file:// offline). BACKLOG nit: no /favicon.ico (svg icon declared; harmless legacy-fallback 404). |
-| 02 | Provable-burn proof + final live-browser QA 🧑‍🤝‍🧑JOE(faucet + Chrome ext) | ⬜ | — | — |
+| 02 | Provable-burn proof + final live-browser QA 🧑‍🤝‍🧑JOE(faucet + Chrome ext) | ✅ | `f9e1397` | **Burn confirmed** block 144246, [txid `d689fcbf…d4e0d519`](https://mempool.space/testnet4/tx/d689fcbfb8c14eaa8b023a27d2ce8bbc22c73bd459900c14ac44b9ecd4e0d519): 8,000 sats → OP_RETURN nulldata (`gettxout` vout0 = null → not in UTXO set), 191,181 change, fee 1,500. Built on the **deployed** `/tool/`. All 3 live-browser QA PASS (Copy→clipboard exact PSBT; homepage balances live, only mempool.space external, fonts self-hosted; tool build zero-network). Test gate 9/9. Full record: `tasks/task-02/PROOF.md`. **task-03 now unblocked** — has the proof txid. |
 | 03 | v1.0.0 release + launch wrap (tag, BACKLOG, announce) | ⬜ | — | — |
 
 🧑‍🤝‍🧑JOE = task has a checkpoint that needs Joe (registrar DNS / testnet faucet / Chrome extension).
