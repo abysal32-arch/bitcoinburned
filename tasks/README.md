@@ -20,7 +20,7 @@ everything else runs unattended.
 ## STATUS
 | # | Task | Status | Commit | Result / notes for next task |
 |---|------|--------|--------|------------------------------|
-| 01 | Domain cutover — bitcoinburned.com live w/ HTTPS 🧑‍🤝‍🧑JOE(DNS) | ⬜ | — | — |
+| 01 | Domain cutover — bitcoinburned.com live w/ HTTPS 🧑‍🤝‍🧑JOE(DNS) | ✅ | `56576ec` | **Live: https://bitcoinburned.com**, Enforce HTTPS on (cert exp 2026-10-13, covers apex+www). www→apex 301, http→https 301; both pages 200, 0 broken assets, no mixed content; canonical/OG/sitemap/robots all on-domain; og-image + custom 404 serve; homepage mempool.space API healthy; tool zero-network (no fetch/XHR). External hosts = mempool.space (data) + github.com (link) only. **Canonical = apex.** Deferred to task-02: browser-runtime QA (clipboard copy, DOM balance render, file:// offline). BACKLOG nit: no /favicon.ico (svg icon declared; harmless legacy-fallback 404). |
 | 02 | Provable-burn proof + final live-browser QA 🧑‍🤝‍🧑JOE(faucet + Chrome ext) | ⬜ | — | — |
 | 03 | v1.0.0 release + launch wrap (tag, BACKLOG, announce) | ⬜ | — | — |
 
