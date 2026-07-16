@@ -235,6 +235,19 @@
   .partial-fields{display:none;}
   .partial-fields.show{display:block;}
 
+  .mode-note{
+    display:none;
+    font-size:12.5px;
+    line-height:1.5;
+    color:var(--muted);
+    margin:-6px 0 14px;
+    padding:9px 11px;
+    border-left:2px solid var(--line);
+    background:rgba(0,0,0,0.02);
+  }
+  .mode-note.show{display:block;}
+  .mode-note strong{color:var(--ink);}
+
   .msg-count{
     font-family:var(--font-mono);
     font-size:11.5px;
@@ -541,6 +554,14 @@
       <button type="button" id="mode-partial">Partial burn</button>
     </div>
 
+    <div class="mode-note show" id="full-burn-note">
+      A full burn produces a transaction whose <em>only</em> output is the OP_RETURN.
+      <strong>Bitcoin Knots nodes reject that by default</strong> — at any message size, and
+      attaching the burn value to the OP_RETURN does not change it (data outputs never count as
+      monetary ones). Bitcoin Core has no such rule and relays it fine. A partial burn has a
+      change output and sidesteps this entirely.
+    </div>
+
     <div class="partial-fields" id="partial-fields">
       <div class="row2">
         <div class="field">
@@ -714,6 +735,9 @@ PROCEED WITH CAUTION!
     $('mode-full').classList.toggle('active', m === 'full');
     $('mode-partial').classList.toggle('active', m === 'partial');
     $('partial-fields').classList.toggle('show', m === 'partial');
+    // Knots rejects a tx whose only output is an OP_RETURN (bare-datacarrier), which is
+    // exactly what full mode builds. Core relays it. Size-independent — see the note.
+    $('full-burn-note').classList.toggle('show', m === 'full');
   }
 
   const msgBytes = () => new TextEncoder().encode($('message').value).length;
@@ -724,7 +748,7 @@ PROCEED WITH CAUTION!
     el.textContent = bytes + ' bytes';
     el.classList.toggle('warn', bytes > 80);
     if (bytes > 500) el.textContent += ' — over the 500-byte limit; shorten it to build';
-    else if (bytes > 80) el.textContent += ' (over the classic 80-byte relay default — may need a more permissive relay policy)';
+    else if (bytes > 80) el.textContent += ' — above 80, Bitcoin Knots nodes reject this by default (Core relays any size). It should still confirm, but may propagate more slowly.';
   });
 
   function showError(msg){

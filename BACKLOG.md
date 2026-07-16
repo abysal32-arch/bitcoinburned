@@ -51,13 +51,29 @@ users cannot broadcast, because broadcasting needs your own Core node and a comm
 tool page and README now say so plainly, but that is a disclosure, not a fix. Worth deciding
 whether v2 does anything about it.
 
-**Unverified, worth testing before writing any guidance:**
+### Knots datacarrier — RESOLVED 2026-07-16, verified at the shipped tag
+The 42-vs-83 question is answered, and the answer inverted our guidance twice. Verified at
+`bitcoinknots/bitcoin` tag `v29.3.knots20260508` (latest release), `src/policy/policy.h`:
+- **`MAX_OP_RETURN_RELAY = 83`** — i.e. **80 bytes of payload** (the whole *script* is measured;
+  overhead is +2 up to a 75-byte payload, +3 from 76). The source comment says so itself: *"80
+  bytes of data, +1 for OP_RETURN, +2 for the pushdata opcodes."* **42 was correct until
+  v29.2.knots20251110 (Nov 2025)** — anyone quoting 42 today is ~8 months stale. Release notes
+  call 83 *"temporary… will be reverted back to 42 in a future version"*, so it has an expiry.
+- **`DEFAULT_PERMITBAREDATACARRIER{false}`** — ⚠ **the finding that actually matters.** Knots
+  rejects any tx with no monetary output (`bare-datacarrier` in `policy.cpp`). **A full burn is
+  exactly that**, at any message size, even empty — and putting value on the OP_RETURN does NOT
+  help, because NULL_DATA outputs never increment `n_monetary`. A change output fixes it. Core
+  has no such rule. The tool now warns on the full-burn option.
+- **`DEFAULT_ACCEPT_DATACARRIER = true`** — "Knots blocks OP_RETURN entirely" is folklore.
+- Core v30+ (v31.1 current) defaults `datacarriersize` to ~100,000 (uncapped) and permits
+  multiple OP_RETURN outputs; Knots still allows only one (`multi-op-return`).
+
+**Still unverified, worth testing before writing any guidance:**
 - Will Sparrow *sign* a value-carrying OP_RETURN (separate from broadcasting it)? Unknown.
 - Do miner-direct submission paths (ViaBTC's broadcast form, Marathon Slipstream) accept one?
   They bypass the normal RPC path, so they plausibly might. Untested.
-- Bitcoin Knots' `datacarriersize` default (42 vs 83) and its 2026 node share; also whether
-  Knots' bare-datacarrier rule rejects a **full** burn (an OP_RETURN with no other monetary
-  output) at any size. If true, that is an independent reason to prefer partial mode.
+- Knots' node share (~22.7%) / Knots-templated hashrate (~3.9%, OCEAN): single crawler, not
+  cross-checked, and reachable-node share ≠ relay-path share. **Do not put magnitudes in copy.**
 - **Custom-domain hygiene.** After go-live, confirm the `www` → apex redirect and re-run an OG
   link-preview check (the `og:image` renders on social unfurls). *(go-live 2026-07-15: both
   verified — www/http → apex 301s, og:image 200.)*

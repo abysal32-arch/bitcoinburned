@@ -205,10 +205,27 @@ Different ports (48332/48333 vs 8332/8333), different datadir, different binary.
 - **Dedicated UTXO:** fund the burn address with *only* burn + fee. This caps the blast
   radius by construction. `full` mode destroys the ENTIRE UTXO minus fee with no cap and no
   warning — a normal fee never trips the tool's only guard.
-- **Message: ≤ 40 bytes UTF-8.** Not 80. `datacarriersize` measures the whole script, which
-  is payload + 2, and Bitcoin Knots (~18–20% of nodes) defaults to 42. 40 bytes → 42-byte
-  script → clears Knots, pre-v30 Core, and v30+ Core. The testnet4 proof's message was 30
-  bytes. Neither `src/burn.js` nor bitcoinjs-lib validates length at all.
+- **Message: ≤ 40 bytes UTF-8** — but the earlier reasoning for this was WRONG, so here is the
+  verified version. The real limit today is **80 bytes of payload** on *both* Core and Knots.
+  Knots' `MAX_OP_RETURN_RELAY` was 42 until v29.2.knots20251110 (Nov 2025) and is **83 now**
+  (= 83 script bytes = 80 payload; the whole script is measured, payload + 2). Verified at the
+  shipped tag `v29.3.knots20260508`, whose own comment reads *"80 bytes of data, +1 for
+  OP_RETURN, +2 for the pushdata opcodes."* Core v30+ defaults to ~100,000 (uncapped).
+  **So why still 40?** Knots' release notes call 83 *"a temporary adjustment… will be reverted
+  back to 42 in a future version."* 40 costs nothing, and survives the revert if it lands
+  before the burn. Anything up to 80 is fine today. The testnet4 proof's message was 30 bytes.
+  Neither `src/burn.js` nor bitcoinjs-lib validates length at all.
+- **⚠ USE PARTIAL MODE — this is now a hard requirement, not a preference.** Knots defaults
+  `-permitbaredatacarrier=false` and rejects any transaction with **no monetary output**:
+  ```cpp
+  if (!n_monetary) { if (nDataOut && !opts.permitbaredatacarrier) { MaybeReject("bare-datacarrier"); } }
+  ```
+  A **full burn is exactly that** — its only output is the OP_RETURN. This fires at ANY message
+  size, even empty, and **attaching the burn value to the OP_RETURN does not help**: NULL_DATA
+  outputs never increment `n_monetary`. A partial burn's change output is monetary, so it passes.
+  Core has no such rule and would relay either. Verified at `v29.3.knots20260508`
+  `src/policy/policy.cpp`. This is an independent third reason for partial mode, on top of
+  "it's the proven path" and "full mode forecloses CPFP".
 - **Fee:** check mempool.space on the day. Partial burn ≈ 151 vB. At 1–2 sat/vB that's
   ~151–302 sats — **three digits**. If the number you're about to type has five digits, it's
   wrong. The field is TOTAL SATS, not sat/vB.
@@ -258,6 +275,13 @@ chainstate). C: has **37.9 GB free** — comfortable. Stage the 9.4 GB snapshot 
 - **Third-party broadcast.** mempool.space/Blockstream calling `sendrawtransaction` hex-only
   was verified against their source (`bitcoin-api.ts`, `electrs/daemon.rs`), so they *should*
   reject. Trying costs 10 seconds once you have signed hex — but build the node anyway.
+- **Knots' node share (~22.7%) and hashrate (~3.9%, OCEAN).** Single crawler, never
+  cross-checked; and reachable-node share is NOT relay-path share. Do not reason from these
+  magnitudes. They do not matter here anyway: at ≤40 bytes and partial mode the burn is
+  standard under *both* implementations, so no propagation caveat applies at all.
+- **Whether the Knots 42 revert has landed.** Pre-announced, not shipped at any tag checked
+  (newest: `v29.3.knots20260508`). Re-check if a new Knots release appears before the burn —
+  though at 40 bytes it cannot bite either way.
 
 ## Sources
 
