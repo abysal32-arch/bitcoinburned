@@ -143,7 +143,9 @@ Remove-Item "D:\utxo-935000.dat"     # reclaim 9.4 GB once step 7 reported coins
 ```
 
 **11. Confirm funding, then build the PSBT** on <https://bitcoinburned.com/tool/> (not the
-CLI — the website has the guards). Use **partial** mode, the proven path.
+CLI — the website has the guards). Use **full** mode: with a dedicated UTXO it computes the burn
+amount for you, so the fee is the only number you type. Ignore the tool's Knots note — it's
+correct, and it doesn't matter (see Burn parameters).
 
 ```powershell
 & $cli -chain=main -datadir="$DD" -rpcwallet=burn listunspent
@@ -202,9 +204,11 @@ Different ports (48332/48333 vs 8332/8333), different datadir, different binary.
 ## Burn parameters
 
 - **Size:** ~20,000 sats + fee. The proof is the script bytes, not the amount.
-- **Dedicated UTXO:** fund the burn address with *only* burn + fee. This caps the blast
-  radius by construction. `full` mode destroys the ENTIRE UTXO minus fee with no cap and no
-  warning — a normal fee never trips the tool's only guard.
+- **Dedicated UTXO — this is the load-bearing safety step, and it is what makes full mode safe.**
+  Fund the burn address with *only* burn + fee (e.g. exactly 20,500 sats), confirm it, and point
+  the tool at nothing else. `full` mode destroys the ENTIRE UTXO minus fee with no cap and no
+  warning — which is a catastrophe on a general-purpose UTXO and *precisely the intent* on a
+  dedicated one. Get this step right and every other footgun in this file stops mattering.
 - **Message: ≤ 40 bytes UTF-8** — but the earlier reasoning for this was WRONG, so here is the
   verified version. The real limit today is **80 bytes of payload** on *both* Core and Knots.
   Knots' `MAX_OP_RETURN_RELAY` was 42 until v29.2.knots20251110 (Nov 2025) and is **83 now**
@@ -215,20 +219,46 @@ Different ports (48332/48333 vs 8332/8333), different datadir, different binary.
   back to 42 in a future version."* 40 costs nothing, and survives the revert if it lands
   before the burn. Anything up to 80 is fine today. The testnet4 proof's message was 30 bytes.
   Neither `src/burn.js` nor bitcoinjs-lib validates length at all.
-- **⚠ USE PARTIAL MODE — this is now a hard requirement, not a preference.** Knots defaults
-  `-permitbaredatacarrier=false` and rejects any transaction with **no monetary output**:
+- **USE FULL MODE** (Joe's call, 2026-07-16, and it's the right one — see the reasoning below).
+  With a dedicated UTXO holding exactly burn + fee, full mode is simpler, safer to *operate*,
+  and leaves nothing behind.
+  - **Fewer fields = fewer irreversible typos.** Full mode computes `burnAmount = value − fee`
+    itself, so you type ONE number: the fee. Partial needs a burn amount AND a change address —
+    two more chances to fat-finger a one-shot transaction.
+  - **The "full mode destroys the whole UTXO" footgun is defused by construction.** That warning
+    only applies to a big general-purpose UTXO. Pointed at a dedicated one holding precisely
+    burn + fee, destroying the whole thing minus fee is *exactly the intent*.
+  - **It's the better-tested path here**, contrary to an earlier claim in this runbook:
+    `test/psbt-vector.txt` IS a full burn, and 5 of the 9 unit tests are full mode (partial has
+    1). What full mode has never been is *broadcast live* — the testnet4 proof was partial. The
+    code path is the more exercised one; only the live broadcast is unproven.
+  - **No litter.** One output, nothing added to the UTXO set. (Though be honest about the size
+    of this win: a partial burn's "litter" is one ordinary change output holding your own
+    spendable coins — the same thing every wallet on earth creates. The real anti-bloat victory
+    was using OP_RETURN at all instead of a fake burn address, and you get that in both modes.)
+  - **⚠ THE ONE REAL COST — overpay the fee.** A full burn has no spendable output, so there is
+    no CPFP escape if you underpay. RBF still works (Core v28+ defaults `mempoolfullrbf=true`,
+    so the missing opt-in signal doesn't block it), but replacing means rebuilding and
+    re-signing. At 1–2 sat/vB a 120 vB full burn is ~150–250 sats: **pay ~500 and stop thinking
+    about it.** That single decision buys out the only scenario that actually hurts.
+- **Knots will not relay a full burn — accept this, don't design around it.** Knots defaults
+  `-permitbaredatacarrier=false` and rejects any transaction with no monetary output:
   ```cpp
   if (!n_monetary) { if (nDataOut && !opts.permitbaredatacarrier) { MaybeReject("bare-datacarrier"); } }
   ```
-  A **full burn is exactly that** — its only output is the OP_RETURN. This fires at ANY message
-  size, even empty, and **attaching the burn value to the OP_RETURN does not help**: NULL_DATA
-  outputs never increment `n_monetary`. A partial burn's change output is monetary, so it passes.
-  Core has no such rule and would relay either. Verified at `v29.3.knots20260508`
-  `src/policy/policy.cpp`. This is an independent third reason for partial mode, on top of
-  "it's the proven path" and "full mode forecloses CPFP".
-- **Fee:** check mempool.space on the day. Partial burn ≈ 151 vB. At 1–2 sat/vB that's
-  ~151–302 sats — **three digits**. If the number you're about to type has five digits, it's
-  wrong. The field is TOTAL SATS, not sat/vB.
+  A full burn is exactly that, at ANY message size, even empty — and attaching the burn value to
+  the OP_RETURN does not help (NULL_DATA outputs never increment `n_monetary`). Verified at
+  `v29.3.knots20260508` `src/policy/policy.cpp`. **This costs propagation speed, not success:**
+  Core has no such rule, relays it fine, and the overwhelming majority of hashrate will mine it.
+  Note the irony — a full burn adds nothing to the UTXO set, so Knots' anti-spam rule is
+  refusing the most considerate transaction on the network. It shape-matches "pays nobody" and
+  cannot tell *destroying value* from *dumping data*.
+- **Fee: pay ~500 sats and stop thinking about it.** Check mempool.space on the day, but the
+  arithmetic barely matters at this size. A full burn ≈ 120 vB (30-byte message), so at 1–2
+  sat/vB the "correct" fee is ~120–240 sats — **three digits**. Deliberately overpaying to ~500
+  is a rounding error against a 20,000 sat burn and it buys out the no-CPFP risk entirely, which
+  is the only thing full mode actually costs you. If the number you're about to type has five
+  digits, it's wrong. **The field is TOTAL SATS, not sat/vB.**
 - **Address type:** `bc1q` (P2WPKH). The proven path. P2TR (`bc1p`) is untested here.
 
 ## Disk
@@ -277,8 +307,11 @@ chainstate). C: has **37.9 GB free** — comfortable. Stage the 9.4 GB snapshot 
   reject. Trying costs 10 seconds once you have signed hex — but build the node anyway.
 - **Knots' node share (~22.7%) and hashrate (~3.9%, OCEAN).** Single crawler, never
   cross-checked; and reachable-node share is NOT relay-path share. Do not reason from these
-  magnitudes. They do not matter here anyway: at ≤40 bytes and partial mode the burn is
-  standard under *both* implementations, so no propagation caveat applies at all.
+  magnitudes. With full mode the burn is nonstandard to Knots regardless (bare-datacarrier), so
+  these numbers are the closest thing to a reason to care — and they are exactly the numbers not
+  to trust. What is solid: Core has no such rule, and a full burn confirms. If it somehow sits
+  unconfirmed for many blocks while paying a healthy fee rate, that is the tell that this
+  mattered more than expected — rebuild as a partial burn and replace via RBF.
 - **Whether the Knots 42 revert has landed.** Pre-announced, not shipped at any tag checked
   (newest: `v29.3.knots20260508`). Re-check if a new Knots release appears before the burn —
   though at 40 bytes it cannot bite either way.
