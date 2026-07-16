@@ -17,7 +17,8 @@
 ## Hard safety rules
 
 - This tool **NEVER asks for, generates, stores, or transmits a private key.** No change may weaken that. It builds unsigned PSBTs only.
-- Any real transaction testing WE do: **testnet4/regtest ONLY.** Never sign or broadcast on mainnet.
+- **Claude never signs or broadcasts on mainnet. Ever.** Not a project preference — Claude does not execute irreversible financial actions. Any *testing* we do is **testnet4/regtest ONLY**.
+- **Exception, and it is not an exception to the line above:** Joe has sanctioned ONE real mainnet burn as a launch artifact (decided 2026-07-16, expected within ~1 week). **Joe** buys the coins, **Joe** signs, **Joe** broadcasts. Claude may build the PSBT, decode/verify it, and prep the node — and must stop at the signing step every time. If a task seems to require Claude to sign or push a mainnet tx, that task is wrong; stop and ask.
 - Burning is irreversible — never soften the user-facing warnings.
 - The site stays fully static/client-side: no server, no analytics/tracking, tool logic bundled inline (no CDN scripts).
 

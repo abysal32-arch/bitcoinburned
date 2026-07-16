@@ -10,7 +10,7 @@
 
 ## Hard invariants (violating any = stop and tell Joe)
 - **NEVER touch private keys.** The tool builds unsigned PSBTs only.
-- **Real transactions by us: testnet4/regtest ONLY.** Never sign/broadcast mainnet.
+- **Claude never signs/broadcasts mainnet.** Testing by us: **testnet4/regtest ONLY**. One sanctioned mainnet burn is planned (see Amendments 2026-07-16) — Joe signs and broadcasts it himself; Claude builds and verifies only, and stops at signing.
 - **Irreversibility warnings stay.** Copy edits preserve or strengthen them.
 - **Fully static + private.** No server, no analytics/tracking, no CDN-loaded logic.
   - The **homepage** makes **exactly one** external call: live balances from `mempool.space`
@@ -67,3 +67,24 @@ extension** on the live site (the headless preview denies clipboard and blocks `
 ## Amendments (append-only)
 - 2026-07-15 (round-2 open): round-1 folders 01–10 removed; regression vector moved to
   `test/psbt-vector.txt`; pre-launch QA recorded in commit `573f3cc`. Launch round = 3 tasks.
+- **2026-07-15 (LAUNCHED — supersedes "Current deployed state" above, which is now historical):**
+  `CNAME` EXISTS and the site is live on the apex: **https://bitcoinburned.com** (v1.0.0, cert
+  exp 2026-10-13, www→apex and http→https 301s). The github.io URL is no longer "staging" — it
+  redirects. **Canonical = apex.** The absolute URLs the section above says to "confirm, don't
+  change" are now correct and on-domain, as predicted. Round-2 task folders removed
+  (see `tasks/README.md`); `task-02/PROOF.md` survives as the burn record.
+- **2026-07-16 (broadcast reality — the big one, `52c76df`):** a burn CANNOT be broadcast by any
+  public endpoint. `maxburnamount` is the **3rd** arg of `sendrawtransaction` (default `0.00`) and
+  cannot live in `bitcoin.conf`. The old `task-02/TASK.md` recorded it as the 2nd arg, which is
+  wrong and could never have produced the testnet4 proof — the verified invocation now lives in
+  `task-02/PROOF.md`. mempool.space / Blockstream / ElectrumX all call `sendrawtransaction`
+  hex-only, so Sparrow and Electrum inherit the rejection; Trezor/Ledger refuse to *sign* a
+  value-carrying OP_RETURN at all. Broadcast means **your own Core node ≥v25**. It is a
+  client-side RPC guard, NOT a relay rule — one node accepting it is enough. Tool page, homepage,
+  README and BACKLOG now all say so.
+- **2026-07-16 (mainnet burn sanctioned):** Joe approved ONE real mainnet burn as a launch
+  artifact, expected within ~1 week. Blocked on Joe buying BTC (none held as of this date) — that
+  is the long pole, not the node. Target size ~20k sats + fee; the proof is the script bytes, not
+  the amount. Mainnet node prep = `loadtxoutset` (assumeutxo) on the v29.4 binary; the 2021
+  datadir at `%APPDATA%\Bitcoin` is a DEAD END (Core v22, predates `maxburnamount`, stranded at
+  height 633,847, empty wallet). **Joe signs and broadcasts; Claude builds and verifies only.**
