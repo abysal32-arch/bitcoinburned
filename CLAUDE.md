@@ -4,7 +4,7 @@
 
 1. Read `tasks/README.md` (status table → find the next ⬜ task).
 2. Read `tasks/_SHARED.md` + the ONE `tasks/task-NN/TASK.md` you are executing.
-3. Do NOT read `design/`, other task folders, or anything else unless your TASK.md explicitly says so.
+3. Do NOT read other task folders or anything else unless your TASK.md explicitly says so.
 
 "new task N" from Joe = `tasks/task-NN`.
 

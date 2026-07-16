@@ -11,8 +11,14 @@ round-1 task folders were removed after completion — their history is in `git 
 Three tasks. Two need a Joe checkpoint (registrar DNS; faucet + Chrome extension);
 everything else runs unattended.
 
+**Round 2 is complete and its task folders have been removed** (2026-07-15), following the
+round-1 precedent — the instruction sheets were scaffolding for finished work and survive in
+`git log`. What remains is the durable record: this STATUS table, `_SHARED.md`, and
+`task-02/PROOF.md` (the burn proof + the exact `sendrawtransaction` invocation).
+
 ## How to work a task
-1. Find the first ⬜ row below — that's the current task.
+1. Find the first ⬜ row below — that's the current task. If every row is ✅, there is no open
+   task; ask Joe rather than inventing one.
 2. Read `_SHARED.md` + `task-NN/TASK.md`. Nothing else.
 3. Execute in the **main session** (never dispatch to subagents — a past dispatch stalled
    13 h on an unattended prompt). Gates green → commit → update this table → tell Joe.
