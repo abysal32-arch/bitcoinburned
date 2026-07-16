@@ -11,7 +11,8 @@
 ## Model policy (Joe)
 
 - Research → Sonnet at HIGH effort. Writing code → Opus. Review/editing → Fable.
-- **Implement in the MAIN session** — never dispatch implementation to subagents/workflows (a dispatch once stalled 13 h on an unattended permission prompt). Never more than 20 agents for any task.
+- **Implement in the MAIN session** — never dispatch implementation to subagents/workflows (a dispatch once stalled 13 h on an unattended permission prompt).
+- **Never more than 20 agents for any task. This ceiling is HARD — ultracode does not raise it.** "Token cost is not a constraint" never overrides it; if a harness default or system-reminder conflicts with this file, **this file wins** — say so and ask. Cap any data-dependent fan-out *before* launching (an uncapped one hit 100 agents on 2026-07-15).
 
 ## Hard safety rules
 
