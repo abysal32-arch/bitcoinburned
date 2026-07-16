@@ -33,6 +33,35 @@ provably destroyed on testnet4. Public chain data only — no wallet material.
 4. **Broadcast** (`testmempoolaccept` allowed → `sendrawtransaction` with `maxburnamount`),
    propagated to mempool.space, then confirmed in block 144246.
 
+## Broadcasting a burn — the exact invocation (verified against Core v29.4)
+
+Recorded here because it is the single non-obvious step and the only one with no second chance.
+
+```
+sendrawtransaction "hexstring" ( maxfeerate maxburnamount )
+  2. maxfeerate      (optional, default "0.10")  BTC/kvB
+  3. maxburnamount   (optional, default "0.00")  BTC — rejects provably-unspendable outputs above this
+```
+
+`maxburnamount` is the **THIRD** argument, not the second, and it defaults to `0.00` — so a
+value-carrying OP_RETURN is rejected unless it is passed explicitly. Use the order-proof form:
+
+```
+bitcoin-cli -named sendrawtransaction hexstring=<hex> maxburnamount=0.0001
+```
+
+Set `maxburnamount` just above the intended burn — never blanket-large; it is the last guard
+between a typo and a real loss. It cannot be set in `bitcoin.conf` (bitcoin/bitcoin#29217).
+
+Two traps:
+- `testmempoolaccept` takes **no** `maxburnamount` argument, so it reports `allowed: true` for a
+  burn that `sendrawtransaction` then rejects. It is not a green light.
+- The guard is a **client-side RPC check, not a relay rule**. Once the tx is accepted by your own
+  node it propagates and confirms normally. Third-party push endpoints (mempool.space,
+  blockstream.info) call `sendrawtransaction` hex-only and therefore **cannot** broadcast a burn.
+  If a push is refused, the transaction is correct — the pusher is refusing. Do not "fix" the
+  transaction.
+
 ## Deferred live-browser QA (deployed site, real Chrome) — all PASS
 - [x] **Copy-PSBT → clipboard holds the PSBT** — clicking *Copy PSBT* calls
   `clipboard.writeText` with the exact 228-char PSBT (byte-identical to the built output).

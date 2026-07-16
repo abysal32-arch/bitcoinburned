@@ -466,8 +466,12 @@
           consensus rules on every full node</span>. There's no private key that could exist, because there's no
           key involved at all.</p>
           <p style="color:var(--muted);"><b style="color:var(--cream);">And it never touches your private key.</b>
-          The tool only builds an unsigned transaction (a PSBT). You review it, then sign and broadcast it yourself
+          The tool only builds an unsigned transaction (a PSBT). You review it, then sign it yourself
           in a wallet you already trust. Nothing to paste, nothing to leak.</p>
+          <p style="color:var(--muted); font-size:0.92em;"><b style="color:var(--cream);">One catch, up front:</b>
+          broadcasting a burn needs <span class="highlight">your own Bitcoin Core node</span> — public push
+          endpoints refuse transactions that send value into an OP_RETURN. The tool explains the exact command
+          when it hands you the PSBT.</p>
           <a href="tool/" class="btn-primary" style="margin-top:8px;">Open the burn tool →</a>
         </div>
         <div>
@@ -483,7 +487,7 @@ value: <span class="c-ok">0.05000000 BTC</span><br><br>
           <div class="code-flow">
             <div class="flow-step"><span class="flow-num">1</span><div><b>You enter</b> a UTXO + amount. No keys, ever.</div></div>
             <div class="flow-step"><span class="flow-num">2</span><div><b>We build</b> an unsigned PSBT with the OP_RETURN burn.</div></div>
-            <div class="flow-step"><span class="flow-num">3</span><div><b>You sign & broadcast</b> in your own wallet.</div></div>
+            <div class="flow-step"><span class="flow-num">3</span><div><b>You sign</b> in your own wallet, then <b>broadcast</b> from your own node.</div></div>
           </div>
         </div>
       </div>

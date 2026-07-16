@@ -403,6 +403,51 @@
   }
   .next-steps li{margin-bottom:6px;}
 
+  .broadcast-note{
+    margin-top:18px;
+    padding:14px 16px;
+    border:1px solid var(--seal);
+    background:rgba(122,46,36,0.06);
+    border-radius:2px;
+  }
+  .broadcast-note h4{
+    font-family:var(--font-mono);
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--seal);
+    margin:0 0 10px;
+  }
+  .broadcast-note p{
+    margin:0 0 10px;
+    font-size:13.5px;
+    line-height:1.55;
+  }
+  .broadcast-note p:last-child{margin-bottom:0;}
+  .broadcast-note code{
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    background:rgba(0,0,0,0.05);
+    padding:1px 4px;
+    border-radius:2px;
+    word-break:break-word;
+  }
+  .broadcast-note .cmd{
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    background:var(--ink);
+    color:var(--paper);
+    padding:10px 12px;
+    border-radius:2px;
+    margin:0 0 10px;
+    overflow-x:auto;
+    white-space:pre;
+  }
+  .broadcast-note .hw-warn{
+    border-top:1px dashed var(--line);
+    padding-top:10px;
+  }
+
   footer{
     margin-top:48px;
     padding-top:22px;
@@ -553,11 +598,47 @@
       <div class="next-steps">
         <h3>What to do with this</h3>
         <ol>
-          <li>Open a PSBT-capable wallet you already trust (Sparrow, Electrum, or your hardware wallet's own app).</li>
-          <li>Import this PSBT and check every field against what you entered above — especially the burn amount.</li>
+          <li>Open a PSBT-capable wallet you already trust and import this PSBT. Check every field against what you entered above — especially the burn amount.</li>
           <li>Sign it there. This page never sees your private key and cannot sign anything itself.</li>
-          <li>Broadcast the signed transaction from that wallet, or via any node/explorer that accepts raw transactions.</li>
+          <li>Broadcast it <strong>from your own Bitcoin Core node</strong> — see below. This is the step that catches people out.</li>
         </ol>
+
+        <div class="broadcast-note">
+          <h4>You need your own node to broadcast this</h4>
+          <p>
+            A burn puts real value into an <code>OP_RETURN</code>, and Bitcoin Core refuses to send
+            that unless you explicitly raise <code>maxburnamount</code>, which defaults to <code>0.00</code>.
+            Public broadcast endpoints — mempool.space, Blockstream, and the Electrum servers behind
+            wallets like Sparrow and Electrum — all call <code>sendrawtransaction</code> without it,
+            so <strong>they will reject this transaction.</strong> The flag
+            <a href="https://github.com/bitcoin/bitcoin/issues/29217" target="_blank" rel="noopener">cannot be set in <code>bitcoin.conf</code></a>
+            either, so it has to be your node and your command line:
+          </p>
+          <pre class="cmd">bitcoin-cli -named sendrawtransaction hexstring=&lt;signed-hex&gt; maxburnamount=&lt;btc&gt;</pre>
+          <p>
+            Set <code>maxburnamount</code> just above the amount you're burning — never blanket-large.
+            It is the last guard between a typo and a real loss.
+          </p>
+          <p>
+            <strong>This is a limit of the tooling around you, not of your transaction.</strong>
+            <code>maxburnamount</code> is a safety check inside that one RPC call — it is not a network
+            rule. Once any single node accepts your burn, the rest of the network relays and mines it
+            normally.
+          </p>
+          <p class="hw-warn">
+            Two more things worth knowing before you sign. <strong>Trezor and Ledger firmware refuse to
+            sign an <code>OP_RETURN</code> output carrying a nonzero amount</strong>, so a hardware wallet
+            likely won't complete this — Bitcoin Core's own <code>walletprocesspsbt</code> is the proven
+            path. And <code>testmempoolaccept</code> takes no <code>maxburnamount</code> argument at all,
+            so it reports <code>allowed: true</code> for a burn that <code>sendrawtransaction</code> then
+            rejects. It is not a green light.
+          </p>
+          <p>
+            If a broadcast is refused, your transaction is almost certainly fine and the pusher is
+            simply declining it. Check the command before you touch the transaction — rebuilding a
+            correct burn is how people make expensive mistakes.
+          </p>
+        </div>
       </div>
     </div>
   </div>

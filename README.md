@@ -30,9 +30,14 @@ Two ways to use the tool, same underlying logic:
 **This tool never asks for, generates, stores, or transmits a private
 key. Full stop.** It only builds a PSBT (Partially Signed Bitcoin
 Transaction) — an inert, unsigned draft. You take that draft to a wallet
-you *already trust* (Sparrow, Electrum, a hardware wallet's own
-companion app, whatever you already use), review every field yourself,
-sign it there, and broadcast it from there.
+you *already trust*, review every field yourself, and sign it there.
+
+Broadcasting a burn is the one step that trips people up, and it needs
+your own Bitcoin Core node — see [Broadcasting a burn](#broadcasting-a-burn)
+below. Note also that Trezor and Ledger firmware refuse to *sign* an
+`OP_RETURN` output carrying a nonzero amount, so a hardware wallet
+probably won't complete a burn; Core's own `walletprocesspsbt` is the
+proven path.
 
 This is deliberate. A tool that asks you to paste in a private key so it
 can "just handle the whole thing for you" is a custody risk, and that
@@ -61,12 +66,58 @@ you sign, not just on this page.
 5. Optionally add a message. It's embedded permanently, right alongside
    the burned value.
 6. Click **Build the unsigned burn PSBT**. Copy the resulting PSBT.
-7. Import it into your own wallet, verify every field again there, sign
-   it, and broadcast it.
+7. Import it into your own wallet, verify every field again there, and
+   sign it.
+8. Broadcast it from your own Bitcoin Core node — see below. Public
+   push endpoints will reject it.
 
 Currently supports UTXOs sitting at **native SegWit (`bc1q…`) or Taproot
 (`bc1p…`) addresses**. See "Known limitations" below for why legacy
 addresses aren't supported yet.
+
+## Broadcasting a burn
+
+A burn puts real value into an `OP_RETURN` output. Bitcoin Core treats
+that as a footgun and refuses to send it unless you explicitly raise
+`maxburnamount`, which **defaults to `0.00`**:
+
+```
+sendrawtransaction "hexstring" ( maxfeerate maxburnamount )
+```
+
+Note the position — `maxburnamount` is the **third** argument, not the
+second. The two-argument form sets `maxfeerate` and your burn is still
+rejected. Use the order-proof named form:
+
+```bash
+bitcoin-cli -named sendrawtransaction hexstring=<signed-hex> maxburnamount=<btc>
+```
+
+Set `maxburnamount` just above the amount you are burning — never
+blanket-large. It is the last guard between a typo and a real loss. It
+also [cannot be set in `bitcoin.conf`](https://github.com/bitcoin/bitcoin/issues/29217),
+so it must be passed per call.
+
+**Public broadcast endpoints cannot do this.** mempool.space,
+Blockstream/esplora, and the Electrum servers behind wallets like
+Sparrow and Electrum all call `sendrawtransaction` hex-only, so they
+will reject a value-carrying `OP_RETURN`. This is a limitation of the
+tooling around you, not of your transaction.
+
+**`testmempoolaccept` is not a green light.** It takes no
+`maxburnamount` argument at all, so it happily reports `allowed: true`
+for a burn that `sendrawtransaction` then rejects.
+
+**The good news: it's a one-node problem, not a network problem.**
+`maxburnamount` is a client-side check inside that single RPC call — it
+is not a relay rule. Once any one node accepts your burn into its
+mempool, the rest of the network relays and mines it normally. That is
+exactly what happened with the testnet4 proof above: a local node
+injected it and mempool.space picked it up seconds later.
+
+If a broadcast is refused, check the command before you touch the
+transaction. Rebuilding a correct burn is how people make expensive
+mistakes.
 
 ## Using the CLI (`cli.js`)
 
@@ -96,6 +147,15 @@ for all practical purposes, but not a proof of impossibility).
 
 ## Known limitations
 
+- **You need your own Bitcoin Core node (v25+) to broadcast.** This is
+  the big one, and it is not a limitation this tool can fix — see
+  [Broadcasting a burn](#broadcasting-a-burn).
+  `maxburnamount` only exists as an RPC argument from Core v25 onward,
+  and public push endpoints don't pass it. Anyone can *build* a burn
+  here; broadcasting one currently requires a node and a command line.
+- **Hardware wallets probably won't sign it.** Trezor and Ledger
+  firmware reject `OP_RETURN` outputs with a nonzero amount. Bitcoin
+  Core's `walletprocesspsbt` is the path the testnet4 proof used.
 - **Legacy addresses (`1…`, non-SegWit `3…`) aren't supported yet.**
   PSBT signing for those input types needs the *entire* previous
   transaction attached (`nonWitnessUtxo`), not just its output script
@@ -126,8 +186,9 @@ cli.js                 command-line interface
 scripts/build-tool.js  rebuilds the inlined bundle (`npm run build:tool`)
 test/burn.test.js      round-trip tests: confirms output is genuinely OP_RETURN,
                        amounts are correct, and unsafe inputs are rejected
-design/homepage.html   chosen homepage design (design/archive/ holds superseded drafts)
-tasks/                 launch task checklists
+test/psbt-vector.txt   reference PSBT for a known input set (human-verified baseline)
+tasks/README.md        launch log: what shipped, when, at which commit
+tasks/task-02/PROOF.md the on-chain burn proof + the exact broadcast invocation
 ```
 
 To rebuild `tool/index.html`'s embedded bundle after editing `src/burn.js`:
