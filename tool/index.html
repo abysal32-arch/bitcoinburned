@@ -247,6 +247,14 @@
   }
   .mode-note.show{display:block;}
   .mode-note strong{color:var(--ink);}
+  .note-aside{
+    display:block;
+    margin-top:8px;
+    padding-top:8px;
+    border-top:1px dashed var(--line);
+    font-size:11.5px;
+    opacity:0.85;
+  }
 
   .msg-count{
     font-family:var(--font-mono);
@@ -555,11 +563,17 @@
     </div>
 
     <div class="mode-note show" id="full-burn-note">
-      A full burn produces a transaction whose <em>only</em> output is the OP_RETURN.
-      <strong>Bitcoin Knots nodes reject that by default</strong> — at any message size, and
-      attaching the burn value to the OP_RETURN does not change it (data outputs never count as
-      monetary ones). Bitcoin Core has no such rule and relays it fine. A partial burn has a
-      change output and sidesteps this entirely.
+      <strong>The clean way to do this:</strong> send exactly what you want to burn, plus the
+      fee, to a fresh address of your own. Wait for it to confirm, then point a full burn at
+      that UTXO. Nothing is left behind, and the amount is computed for you — the fee is the
+      only number you type, so there's no burn amount or change address to get wrong. It costs
+      one extra transaction. <em>A full burn destroys the whole UTXO minus the fee, so only aim
+      it at one you made for the purpose.</em>
+      <span class="note-aside">One caveat, and it's minor: a full burn's only output is the
+      OP_RETURN, and Bitcoin Knots nodes won't relay a transaction that pays nobody — at any
+      message size. Bitcoin Core has no such rule, so it still confirms; it may just spread more
+      slowly. (Attaching the burn value doesn't help — destroyed outputs don't count as paying
+      anyone.) A partial burn has a change output and sidesteps it.</span>
     </div>
 
     <div class="partial-fields" id="partial-fields">
